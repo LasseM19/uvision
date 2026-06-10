@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { DepartureBanner } from './DepartureBanner'
 import { useAppContext } from '../context/AppContext'
@@ -18,6 +18,8 @@ export function LocationServices() {
     homeLocation,
     preferences,
     location,
+    liveTrackingEnabled,
+    markLocationAccessDenied,
     setLivePosition,
     activeTimer,
     minutesLeft,
@@ -25,11 +27,19 @@ export function LocationServices() {
     setDepartureBanner,
   } = useAppContext()
 
-  const trackingEnabled =
-    route.pathname === '/map' ||
-    Boolean(homeLocation && preferences.leaveHomeAlertsEnabled)
+  const handlePermissionDenied = useCallback(() => {
+    markLocationAccessDenied()
+  }, [markLocationAccessDenied])
 
-  const { position, error } = useLivePosition(trackingEnabled)
+  const trackingEnabled =
+    liveTrackingEnabled &&
+    (route.pathname === '/map' ||
+      Boolean(homeLocation && preferences.leaveHomeAlertsEnabled))
+
+  const { position } = useLivePosition({
+    enabled: trackingEnabled,
+    onPermissionDenied: handlePermissionDenied,
+  })
   const { forecast } = useForecast(location)
   const wasAtHomeRef = useRef<boolean | null>(null)
 
@@ -84,10 +94,6 @@ export function LocationServices() {
       wasAtHomeRef.current = null
     }
   }, [homeLocation])
-
-  if (error && route.pathname === '/map') {
-    return null
-  }
 
   if (!departureBanner) return null
 

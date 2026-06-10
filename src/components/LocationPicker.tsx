@@ -11,6 +11,7 @@ import {
   resolveCurrentLocation,
 } from '../lib/geolocation'
 import { searchCities } from '../lib/openMeteo'
+import { useAppContext } from '../context/AppContext'
 
 interface LocationPickerProps {
   onSelect: (location: Location) => void
@@ -18,14 +19,20 @@ interface LocationPickerProps {
 }
 
 export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
+  const { locationPermissionDenied, markLocationAccessGranted, markLocationAccessDenied } =
+    useAppContext()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Location[]>([])
   const [loading, setLoading] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [locationBlocked, setLocationBlocked] = useState(false)
+  const [locationBlocked, setLocationBlocked] = useState(locationPermissionDenied)
   const gpsInFlightRef = useRef(false)
   const secureContext = isSecureContextForGeolocation()
+
+  useEffect(() => {
+    setLocationBlocked(locationPermissionDenied)
+  }, [locationPermissionDenied])
 
   const useGps = useCallback(async () => {
     if (gpsInFlightRef.current) return
@@ -35,11 +42,13 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
     setError(null)
 
     try {
-      const location = await resolveCurrentLocation()
-      onSelect(location)
+      const resolved = await resolveCurrentLocation()
+      markLocationAccessGranted()
+      onSelect(resolved)
     } catch (err) {
       if (isPermissionDeniedError(err)) {
         setLocationBlocked(true)
+        markLocationAccessDenied()
       } else {
         setError(geolocationErrorMessage(err))
       }
@@ -47,7 +56,7 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
       gpsInFlightRef.current = false
       setGpsLoading(false)
     }
-  }, [onSelect])
+  }, [markLocationAccessDenied, markLocationAccessGranted, onSelect])
 
   useEffect(() => {
     if (!secureContext) {

@@ -28,6 +28,7 @@ import {
   saveHomeLocation,
   saveLocation,
   setActiveTimer,
+  setLocationPermissionDenied,
   updatePreferences,
 } from '../lib/storage'
 import {
@@ -51,12 +52,17 @@ interface AppContextValue {
   location: Location | null
   homeLocation: HomeLocation | null
   livePosition: LivePosition | null
+  liveTrackingEnabled: boolean
+  locationPermissionDenied: boolean
   departureBanner: DepartureAlertCopy | null
   setPreferences: (prefs: Partial<UserPreferences>) => void
   setLocation: (location: Location) => void
   setHomeLocation: (home: HomeLocation) => void
   clearHomeLocation: () => void
   setLivePosition: (position: LivePosition | null) => void
+  setLiveTrackingEnabled: (enabled: boolean) => void
+  markLocationAccessGranted: () => void
+  markLocationAccessDenied: () => void
   setDepartureBanner: (copy: DepartureAlertCopy | null) => void
   activeTimer: ActiveTimer | null
   phase: TimerPhase
@@ -74,6 +80,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [location, setLocState] = useState<Location | null>(initial.location)
   const [homeLocation, setHomeState] = useState<HomeLocation | null>(initial.homeLocation)
   const [livePosition, setLivePositionState] = useState<LivePosition | null>(null)
+  const [liveTrackingEnabled, setLiveTrackingEnabledState] = useState(false)
+  const [locationPermissionDenied, setLocationPermissionDeniedState] = useState(
+    initial.locationPermissionDenied,
+  )
   const [departureBanner, setDepartureBannerState] = useState<DepartureAlertCopy | null>(null)
   const [activeTimer, setLocalTimer] = useState<ActiveTimer | null>(initial.activeTimer)
   const [logs, setLogs] = useState<ApplicationLog[]>(initial.applicationLogs)
@@ -112,6 +122,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setLivePosition = useCallback((position: LivePosition | null) => {
     setLivePositionState(position)
+  }, [])
+
+  const setLiveTrackingEnabled = useCallback((enabled: boolean) => {
+    setLiveTrackingEnabledState(enabled)
+    if (!enabled) {
+      setLivePositionState(null)
+    }
+  }, [])
+
+  const markLocationAccessGranted = useCallback(() => {
+    setLocationPermissionDenied(false)
+    setLocationPermissionDeniedState(false)
+    setLiveTrackingEnabledState(true)
+  }, [])
+
+  const markLocationAccessDenied = useCallback(() => {
+    setLocationPermissionDenied(true)
+    setLocationPermissionDeniedState(true)
+    setLiveTrackingEnabledState(false)
+    setLivePositionState(null)
   }, [])
 
   const setDepartureBanner = useCallback((copy: DepartureAlertCopy | null) => {
@@ -169,12 +199,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       location,
       homeLocation,
       livePosition,
+      liveTrackingEnabled,
+      locationPermissionDenied,
       departureBanner,
       setPreferences,
       setLocation,
       setHomeLocation,
       clearHomeLocation,
       setLivePosition,
+      setLiveTrackingEnabled,
+      markLocationAccessGranted,
+      markLocationAccessDenied,
       setDepartureBanner,
       activeTimer,
       phase,
@@ -188,12 +223,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       location,
       homeLocation,
       livePosition,
+      liveTrackingEnabled,
+      locationPermissionDenied,
       departureBanner,
       setPreferences,
       setLocation,
       setHomeLocation,
       clearHomeLocation,
       setLivePosition,
+      setLiveTrackingEnabled,
+      markLocationAccessGranted,
+      markLocationAccessDenied,
       setDepartureBanner,
       activeTimer,
       phase,

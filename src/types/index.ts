@@ -93,6 +93,7 @@ export interface StoredState {
   location: Location | null
   homeLocation: HomeLocation | null
   lastDepartureAlertDate: string | null
+  locationPermissionDenied: boolean
   applicationLogs: ApplicationLog[]
   activeTimer: ActiveTimer | null
 }

@@ -7,13 +7,21 @@ import {
   watchGeolocationPosition,
 } from '../lib/geolocation'
 
+interface UseLivePositionOptions {
+  enabled: boolean
+  onPermissionDenied?: () => void
+}
+
 interface UseLivePositionResult {
   position: LivePosition | null
   error: string | null
   loading: boolean
 }
 
-export function useLivePosition(enabled: boolean): UseLivePositionResult {
+export function useLivePosition({
+  enabled,
+  onPermissionDenied,
+}: UseLivePositionOptions): UseLivePositionResult {
   const [position, setPosition] = useState<LivePosition | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -21,6 +29,7 @@ export function useLivePosition(enabled: boolean): UseLivePositionResult {
   useEffect(() => {
     if (!enabled) {
       setLoading(false)
+      setPosition(null)
       return
     }
 
@@ -45,7 +54,9 @@ export function useLivePosition(enabled: boolean): UseLivePositionResult {
         setError(null)
       },
       (err) => {
-        if (!isPermissionDeniedError(err)) {
+        if (isPermissionDeniedError(err)) {
+          onPermissionDenied?.()
+        } else {
           setError(geolocationErrorMessage(err))
         }
         setLoading(false)
@@ -53,7 +64,7 @@ export function useLivePosition(enabled: boolean): UseLivePositionResult {
     )
 
     return stop
-  }, [enabled])
+  }, [enabled, onPermissionDenied])
 
   return { position, error, loading }
 }

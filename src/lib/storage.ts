@@ -31,6 +31,7 @@ export function loadState(): StoredState {
     location: raw.location ?? null,
     homeLocation: raw.homeLocation ?? null,
     lastDepartureAlertDate: raw.lastDepartureAlertDate ?? null,
+    locationPermissionDenied: raw.locationPermissionDenied ?? false,
     applicationLogs: raw.applicationLogs ?? [],
     activeTimer: raw.activeTimer ?? null,
   }
@@ -46,6 +47,10 @@ export function saveState(partial: Partial<StoredState>): StoredState {
       partial.lastDepartureAlertDate !== undefined
         ? partial.lastDepartureAlertDate
         : current.lastDepartureAlertDate,
+    locationPermissionDenied:
+      partial.locationPermissionDenied !== undefined
+        ? partial.locationPermissionDenied
+        : current.locationPermissionDenied,
     applicationLogs: partial.applicationLogs ?? current.applicationLogs,
     activeTimer: partial.activeTimer !== undefined ? partial.activeTimer : current.activeTimer,
   }
@@ -76,6 +81,14 @@ export function clearHomeLocation(): void {
 
 export function markDepartureAlertSent(dateKey: string): void {
   saveState({ lastDepartureAlertDate: dateKey })
+}
+
+export function setLocationPermissionDenied(denied: boolean): void {
+  saveState({ locationPermissionDenied: denied })
+}
+
+export function isLocationPermissionDenied(): boolean {
+  return loadState().locationPermissionDenied
 }
 
 export function getLastDepartureAlertDate(): string | null {

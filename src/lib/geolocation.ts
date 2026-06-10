@@ -258,6 +258,10 @@ export async function reverseGeocodeLabel(latitude: number, longitude: number): 
   }
 }
 
+export async function ensureGeolocationAccess(): Promise<GeolocationPosition> {
+  return getCurrentPositionWithRetry()
+}
+
 export async function resolveCurrentLocation(): Promise<Location> {
   const position = await getCurrentPositionWithRetry()
   const { latitude, longitude } = position.coords

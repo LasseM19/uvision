@@ -666,6 +666,18 @@ input {
   color: var(--color-text);
 }
 
+.location-help-compact__text + .location-help-compact__text {
+  margin-top: 0.5rem;
+}
+
+.location-help-compact__link {
+  display: inline-block;
+  margin-top: 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-orange);
+}
+
 .location-settings-prompt {
   border: 1px solid var(--color-orange);
   background: var(--color-white);

@@ -3,9 +3,12 @@ import { Link } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { LocationMap } from '../components/LocationMap'
+import { LocationSettingsPrompt } from '../components/LocationSettingsPrompt'
 import { useAppContext } from '../context/AppContext'
 import {
+  ensureGeolocationAccess,
   geolocationErrorMessage,
+  isPermissionDeniedError,
   isSecureContextForGeolocation,
   resolveCurrentLocation,
   reverseGeocodeLabel,
@@ -17,15 +20,22 @@ export function MapPage() {
     location,
     homeLocation,
     livePosition,
+    liveTrackingEnabled,
+    locationPermissionDenied,
     preferences,
     setHomeLocation,
     clearHomeLocation,
     setPreferences,
+    setLocation,
+    markLocationAccessGranted,
+    markLocationAccessDenied,
   } = useAppContext()
   const [savingHome, setSavingHome] = useState(false)
   const [homeError, setHomeError] = useState<string | null>(null)
+  const [enablingLocation, setEnablingLocation] = useState(false)
 
   const secureContext = isSecureContextForGeolocation()
+  const showLocationHelp = locationPermissionDenied
 
   const setHomeFromPosition = useCallback(
     async (latitude: number, longitude: number) => {
@@ -49,6 +59,27 @@ export function MapPage() {
     [preferences.homeGeofenceRadiusMeters, setHomeLocation],
   )
 
+  async function enableLiveLocation() {
+    setEnablingLocation(true)
+    setHomeError(null)
+    try {
+      await ensureGeolocationAccess()
+      markLocationAccessGranted()
+      if (!location) {
+        const resolved = await resolveCurrentLocation()
+        setLocation(resolved)
+      }
+    } catch (err) {
+      if (isPermissionDeniedError(err)) {
+        markLocationAccessDenied()
+      } else {
+        setHomeError(geolocationErrorMessage(err))
+      }
+    } finally {
+      setEnablingLocation(false)
+    }
+  }
+
   async function handleSetHomeHere() {
     if (livePosition) {
       await setHomeFromPosition(livePosition.latitude, livePosition.longitude)
@@ -59,9 +90,14 @@ export function MapPage() {
     setHomeError(null)
     try {
       const resolved = await resolveCurrentLocation()
+      markLocationAccessGranted()
       await setHomeFromPosition(resolved.latitude, resolved.longitude)
     } catch (err) {
-      setHomeError(geolocationErrorMessage(err))
+      if (isPermissionDeniedError(err)) {
+        markLocationAccessDenied()
+      } else {
+        setHomeError(geolocationErrorMessage(err))
+      }
     } finally {
       setSavingHome(false)
     }
@@ -82,6 +118,20 @@ export function MapPage() {
         </Card>
       )}
 
+      <LocationSettingsPrompt visible={showLocationHelp} />
+
+      {!liveTrackingEnabled && secureContext && !showLocationHelp && (
+        <Card className="banner-card">
+          <p className="hint-text">
+            Safari only allows GPS after you tap a button. Enable live location to see yourself on
+            the map.
+          </p>
+          <Button fullWidth onClick={() => void enableLiveLocation()} disabled={enablingLocation}>
+            {enablingLocation ? 'Requesting location…' : 'Enable live location'}
+          </Button>
+        </Card>
+      )}
+
       <Card className="map-card">
         <LocationMap
           home={homeLocation}
@@ -89,10 +139,10 @@ export function MapPage() {
           fallbackLocation={location}
           height={320}
         />
-        {(livePosition === null && secureContext) && (
+        {liveTrackingEnabled && livePosition === null && secureContext && (
           <p className="hint-text">Finding your position…</p>
         )}
-        {homeError && <p className="error-text">{homeError}</p>}
+        {homeError && !showLocationHelp && <p className="error-text">{homeError}</p>}
       </Card>
 
       <section className="section">
