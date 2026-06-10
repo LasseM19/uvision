@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useAppContext } from '../context/AppContext'
+import { useI18n } from '../hooks/useI18n'
 import { LocationPicker } from './LocationPicker'
 
 export function LocationBar() {
   const { location, setLocation } = useAppContext()
+  const { t } = useI18n()
   const [editing, setEditing] = useState(!location)
 
   if (editing || !location) {
@@ -25,9 +27,9 @@ export function LocationBar() {
       </span>
       <span className="location-bar__text">
         <span className="location-bar__label">{location.label}</span>
-        <span className="location-bar__hint">Tap to change location</span>
+        <span className="location-bar__hint">{t('locationPicker.tapToChange')}</span>
       </span>
-      <span className="location-bar__action">Change</span>
+      <span className="location-bar__action">{t('common.change')}</span>
     </button>
   )
 }

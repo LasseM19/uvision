@@ -1,7 +1,6 @@
 import { Card } from './Card'
 import { SwipeToDeleteRow } from './SwipeToDeleteRow'
-import { getActivityLabel } from '../lib/storage'
-import { formatTime } from '../lib/uvLogic'
+import { useI18n } from '../hooks/useI18n'
 import type { ApplicationLog } from '../types'
 
 interface ApplicationLogCardProps {
@@ -11,7 +10,9 @@ interface ApplicationLogCardProps {
 }
 
 export function ApplicationLogCard({ log, onDelete, variant = 'full' }: ApplicationLogCardProps) {
+  const { t, activityLabel, formatTime, formatDateTime, formatDateShort } = useI18n()
   const appliedAt = new Date(log.appliedAt)
+  const interval = t('log.everyMin', { minutes: log.intervalMinutes })
 
   return (
     <SwipeToDeleteRow onDelete={() => onDelete(log.id)}>
@@ -19,23 +20,16 @@ export function ApplicationLogCard({ log, onDelete, variant = 'full' }: Applicat
         <div className="log-item__content">
           <p className="log-date">
             {variant === 'full'
-              ? appliedAt.toLocaleString([], {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                })
-              : `${appliedAt.toLocaleDateString([], {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                })} · ${formatTime(appliedAt)}`}
+              ? formatDateTime(appliedAt)
+              : `${formatDateShort(appliedAt)} · ${formatTime(appliedAt)}`}
           </p>
           <p className="log-meta">
             {variant === 'full' && `${log.locationLabel} · `}
-            UV {log.uvAtApplication} · {getActivityLabel(log.activityMode)} · every{' '}
-            {log.intervalMinutes} min
+            {t('log.uvActivity', {
+              uv: log.uvAtApplication,
+              activity: activityLabel(log.activityMode),
+              interval,
+            })}
           </p>
         </div>
       </Card>

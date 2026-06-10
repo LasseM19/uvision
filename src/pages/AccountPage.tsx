@@ -4,70 +4,68 @@ import { AccountMenuLink } from '../components/AccountMenuLink'
 import { Card } from '../components/Card'
 import { PageBrandHeader } from '../components/PageBrandHeader'
 import { useAppContext } from '../context/AppContext'
+import { useI18n } from '../hooks/useI18n'
 import { getSpfLabel } from '../lib/storage'
 
 export function AccountPage() {
   const navigate = useNavigate()
   const { preferences, location, homeLocation, logout } = useAppContext()
+  const { t } = useI18n()
 
   async function handleLogout() {
     await logout()
     navigate('/onboarding', { replace: true })
   }
 
-  const languageLabel = preferences.language === 'nl' ? 'Nederlands' : 'English'
+  const languageLabel = preferences.language === 'nl' ? t('account.dutch') : t('account.english')
 
   return (
     <div className="page">
-      <PageBrandHeader eyebrow="Account" title="Settings" />
+      <PageBrandHeader eyebrow={t('account.eyebrow')} title={t('account.title')} />
 
       <Card className="account-profile-card">
-        <p className="account-profile-card__name">Guest</p>
-        <p className="hint-text">Sign in to sync across devices — coming soon.</p>
+        <p className="account-profile-card__name">{t('common.guest')}</p>
+        <p className="hint-text">{t('account.signInSoon')}</p>
       </Card>
 
-      <nav className="account-menu" aria-label="Account sections">
-        <AccountMenuLink to="/account/profile" title="Profile" subtitle="Guest account" />
+      <nav className="account-menu" aria-label={t('account.title')}>
+        <AccountMenuLink to="/account/profile" title={t('account.profile')} subtitle={t('account.guestAccount')} />
         <AccountMenuLink
           to="/account/location"
-          title="Forecast location"
-          subtitle={location?.label ?? 'Not set'}
+          title={t('account.forecastLocation')}
+          subtitle={location?.label ?? t('common.notSet')}
         />
         <AccountMenuLink
           to="/account/skin"
-          title="Skin & SPF"
+          title={t('account.skinSpf')}
           subtitle={`Type ${preferences.skinType} · ${getSpfLabel(preferences.spf)}`}
         />
-        <AccountMenuLink to="/account/language" title="Language" subtitle={languageLabel} />
+        <AccountMenuLink to="/account/language" title={t('account.language')} subtitle={languageLabel} />
         <AccountMenuLink
           to="/account/home"
-          title="Home & alerts"
+          title={t('account.homeAlerts')}
           subtitle={
             homeLocation
               ? `${homeLocation.label} · ${homeLocation.radiusMeters} m`
-              : 'Not configured'
+              : t('common.notConfigured')
           }
         />
         <AccountMenuLink
           to="/account/notifications"
-          title="Notifications"
-          subtitle={preferences.notificationsEnabled ? 'Enabled' : 'Off'}
+          title={t('account.notifications')}
+          subtitle={preferences.notificationsEnabled ? t('common.enabled') : t('common.off')}
         />
-        <AccountMenuLink to="/account/learn" title="Learn about UV" subtitle="Sun safety tips" />
-        <AccountMenuLink
-          to="/account/history"
-          title="History"
-          subtitle="Protection log"
-        />
+        <AccountMenuLink to="/account/learn" title={t('account.learn')} subtitle={t('account.learnSubtitle')} />
+        <AccountMenuLink to="/account/history" title={t('account.history')} subtitle={t('account.historySubtitle')} />
         <AccountMenuLink
           to="/account/troubleshooting"
-          title="Troubleshooting"
-          subtitle="Cache & Safari fixes"
+          title={t('account.troubleshooting')}
+          subtitle={t('account.troubleshootingSubtitle')}
         />
       </nav>
 
       <Button variant="ghost" fullWidth className="account-logout-btn" onClick={() => void handleLogout()}>
-        Log out
+        {t('account.logout')}
       </Button>
     </div>
   )

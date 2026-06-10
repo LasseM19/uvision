@@ -1,4 +1,5 @@
 import { useRef, useState, type PointerEvent } from 'react'
+import { useI18n } from '../hooks/useI18n'
 import { REAPPLY_SNOOZE_MINUTES } from '../lib/sunscreenTimer'
 
 const COMPLETE_THRESHOLD = 0.82
@@ -8,6 +9,7 @@ interface SwipeToSnoozeSliderProps {
 }
 
 export function SwipeToSnoozeSlider({ onSnooze }: SwipeToSnoozeSliderProps) {
+  const { t } = useI18n()
   const trackRef = useRef<HTMLDivElement>(null)
   const [progress, setProgress] = useState(0)
   const [dragging, setDragging] = useState(false)
@@ -78,10 +80,14 @@ export function SwipeToSnoozeSlider({ onSnooze }: SwipeToSnoozeSliderProps) {
 
   return (
     <div className="snooze-slider">
-      <p className="snooze-slider__hint">Swipe right to snooze for {REAPPLY_SNOOZE_MINUTES} min</p>
+      <p className="snooze-slider__hint">
+        {t('alarm.swipeSnooze', { minutes: REAPPLY_SNOOZE_MINUTES })}
+      </p>
       <div ref={trackRef} className="snooze-slider__track">
         <div className="snooze-slider__fill" style={{ width: `calc(3.25rem + (100% - 3.25rem) * ${progress})` }} />
-        <span className="snooze-slider__label">Snooze {REAPPLY_SNOOZE_MINUTES} min</span>
+        <span className="snooze-slider__label">
+          {t('alarm.snooze', { minutes: REAPPLY_SNOOZE_MINUTES })}
+        </span>
         <div
           className={`snooze-slider__handle${dragging ? ' snooze-slider__handle--dragging' : ''}`}
           style={{ left: `calc(0.25rem + (100% - 3.25rem - 0.5rem) * ${progress})` }}
@@ -93,7 +99,7 @@ export function SwipeToSnoozeSlider({ onSnooze }: SwipeToSnoozeSliderProps) {
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(progress * 100)}
-          aria-label={`Snooze for ${REAPPLY_SNOOZE_MINUTES} minutes`}
+          aria-label={t('alarm.snoozeAria', { minutes: REAPPLY_SNOOZE_MINUTES })}
         >
           <span aria-hidden>››</span>
         </div>

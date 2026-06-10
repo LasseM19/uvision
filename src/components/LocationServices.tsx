@@ -5,10 +5,8 @@ import { useAppContext } from '../context/AppContext'
 import { useForecast } from '../hooks/useForecast'
 import { useLivePosition } from '../hooks/useLivePosition'
 import { isWithinHomeRadius, todayDateKey } from '../lib/geofence'
-import {
-  getDepartureAlertCopy,
-  showDepartureNotification,
-} from '../lib/notifications'
+import { getDepartureAlertCopyForLang } from '../i18n'
+import { showDepartureNotification } from '../lib/notifications'
 import { getLastDepartureAlertDate, markDepartureAlertSent } from '../lib/storage'
 
 export function LocationServices() {
@@ -53,7 +51,11 @@ export function LocationServices() {
     if (wasAtHome === true && !atHome) {
       const maxUv = forecast?.daily[0]?.maxEffectiveUv ?? 0
       const hasActiveProtection = Boolean(activeTimer && minutesLeft > 0)
-      const copy = getDepartureAlertCopy({ maxUv, hasActiveProtection, minutesLeft })
+      const copy = getDepartureAlertCopyForLang(preferences.language, {
+        maxUv,
+        hasActiveProtection,
+        minutesLeft,
+      })
 
       if (!copy) {
         wasAtHomeRef.current = atHome
@@ -78,6 +80,7 @@ export function LocationServices() {
   }, [
     homeLocation,
     position,
+    preferences.language,
     preferences.leaveHomeAlertsEnabled,
     preferences.notificationsEnabled,
     forecast,

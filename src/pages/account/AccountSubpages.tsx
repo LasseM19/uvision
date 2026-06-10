@@ -7,16 +7,18 @@ import { HomeAddressSettings } from '../../components/HomeAddressSettings'
 import { LocationPicker } from '../../components/LocationPicker'
 import { useAppContext } from '../../context/AppContext'
 import { useForecast } from '../../hooks/useForecast'
+import { useI18n } from '../../hooks/useI18n'
 import { clearAppCacheAndReload } from '../../lib/clearCache'
 import { isBackendConfigured } from '../../lib/api'
 import { requestNotificationPermission } from '../../lib/notifications'
 import { sendTestPush, subscribeToBackendPush } from '../../lib/pushBackend'
-import { getSkinTypeLabel, getSpfLabel } from '../../lib/storage'
+import { getSpfLabel } from '../../lib/storage'
 import type { AppLanguage } from '../../types'
 
 export function AccountProfilePage() {
   const navigate = useNavigate()
   const { logout } = useAppContext()
+  const { t } = useI18n()
 
   async function handleLogout() {
     await logout()
@@ -25,15 +27,13 @@ export function AccountProfilePage() {
 
   return (
     <div className="page">
-      <AccountSubpageHeader title="Profile" />
+      <AccountSubpageHeader title={t('profile.title')} />
 
       <Card>
-        <p className="location-settings-current">Guest</p>
-        <p className="hint-text">
-          You are using UVision without an account. Your data stays on this device.
-        </p>
+        <p className="location-settings-current">{t('common.guest')}</p>
+        <p className="hint-text">{t('profile.guestHint')}</p>
         <Button variant="secondary" fullWidth disabled style={{ marginTop: '0.75rem' }}>
-          Sign in — coming soon
+          {t('profile.signInSoon')}
         </Button>
       </Card>
 
@@ -44,7 +44,7 @@ export function AccountProfilePage() {
         style={{ marginTop: '1rem' }}
         onClick={() => void handleLogout()}
       >
-        Log out
+        {t('account.logout')}
       </Button>
     </div>
   )
@@ -52,15 +52,14 @@ export function AccountProfilePage() {
 
 export function AccountLocationPage() {
   const { location, setLocation } = useAppContext()
+  const { t } = useI18n()
   const [showLocationPicker, setShowLocationPicker] = useState(!location)
 
   return (
     <div className="page">
-      <AccountSubpageHeader title="Forecast location" />
+      <AccountSubpageHeader title={t('locationPage.title')} />
 
-      <p className="hint-text">
-        Used for UV forecasts on Home. Set once — change here when you travel.
-      </p>
+      <p className="hint-text">{t('locationPage.hint')}</p>
 
       {showLocationPicker ? (
         <LocationPicker
@@ -74,7 +73,7 @@ export function AccountLocationPage() {
         <Card className="location-settings-card">
           <p className="location-settings-current">{location?.label}</p>
           <Button variant="secondary" fullWidth onClick={() => setShowLocationPicker(true)}>
-            Change location
+            {t('locationPage.changeLocation')}
           </Button>
         </Card>
       )}
@@ -84,13 +83,14 @@ export function AccountLocationPage() {
 
 export function AccountSkinPage() {
   const { preferences, setPreferences } = useAppContext()
+  const { t, skinTypeLabel } = useI18n()
 
   return (
     <div className="page">
-      <AccountSubpageHeader title="Skin & SPF" />
+      <AccountSubpageHeader title={t('skinPage.title')} />
 
       <section className="section">
-        <h2 className="section-title">Skin type</h2>
+        <h2 className="section-title">{t('skinPage.skinType')}</h2>
         <div className="option-list">
           {([1, 2, 3, 4, 5, 6] as const).map((type) => (
             <button
@@ -99,15 +99,15 @@ export function AccountSkinPage() {
               className={`option-row${preferences.skinType === type ? ' option-row--active' : ''}`}
               onClick={() => setPreferences({ skinType: type })}
             >
-              <span>Type {type}</span>
-              <span className="option-sub">{getSkinTypeLabel(type)}</span>
+              <span>{t('skinPage.typeN', { n: type })}</span>
+              <span className="option-sub">{skinTypeLabel(type)}</span>
             </button>
           ))}
         </div>
       </section>
 
       <section className="section">
-        <h2 className="section-title">SPF</h2>
+        <h2 className="section-title">{t('skinPage.spf')}</h2>
         <div className="pill-group">
           {([15, 30, 50] as const).map((spf) => (
             <button
@@ -127,16 +127,17 @@ export function AccountSkinPage() {
 
 export function AccountLanguagePage() {
   const { preferences, setPreferences } = useAppContext()
+  const { t } = useI18n()
 
   return (
     <div className="page">
-      <AccountSubpageHeader title="Language" />
+      <AccountSubpageHeader title={t('account.language')} />
 
       <div className="pill-group">
         {(
           [
-            { value: 'en' as AppLanguage, label: 'English' },
-            { value: 'nl' as AppLanguage, label: 'Nederlands' },
+            { value: 'en' as AppLanguage, label: t('account.english') },
+            { value: 'nl' as AppLanguage, label: t('account.dutch') },
           ] as const
         ).map(({ value, label }) => (
           <button
@@ -149,7 +150,7 @@ export function AccountLanguagePage() {
           </button>
         ))}
       </div>
-      <p className="hint-text">Full Dutch translation coming soon — preference is saved now.</p>
+      <p className="hint-text">{t('account.languageHint')}</p>
     </div>
   )
 }
@@ -162,6 +163,7 @@ export function AccountHomePage() {
     setLiveTrackingEnabled,
     markLocationAccessGranted,
   } = useAppContext()
+  const { t } = useI18n()
 
   function toggleLeaveHomeAlerts() {
     const next = !preferences.leaveHomeAlertsEnabled
@@ -177,7 +179,7 @@ export function AccountHomePage() {
 
   return (
     <div className="page">
-      <AccountSubpageHeader title="Home & alerts" />
+      <AccountSubpageHeader title={t('homeAlerts.title')} />
 
       <HomeAddressSettings
         onHomeSaved={() => {
@@ -190,9 +192,7 @@ export function AccountHomePage() {
 
       <div style={{ marginTop: '0.75rem' }}>
         <Card>
-          <p className="hint-text">
-            Get an English alert when you leave home on high-UV days (while the app is open).
-          </p>
+          <p className="hint-text">{t('homeAlerts.leaveHint')}</p>
           <Button
             variant={preferences.leaveHomeAlertsEnabled ? 'secondary' : 'primary'}
             fullWidth
@@ -200,9 +200,9 @@ export function AccountHomePage() {
             onClick={toggleLeaveHomeAlerts}
             disabled={!homeLocation && !preferences.leaveHomeAlertsEnabled}
           >
-            {preferences.leaveHomeAlertsEnabled ? 'Leave-home alerts on' : 'Enable leave-home alerts'}
+            {preferences.leaveHomeAlertsEnabled ? t('homeAlerts.alertsOn') : t('homeAlerts.enableAlerts')}
           </Button>
-          {!homeLocation && <p className="hint-text">Set a home address above first.</p>}
+          {!homeLocation && <p className="hint-text">{t('homeAlerts.setHomeFirst')}</p>}
         </Card>
       </div>
     </div>
@@ -212,6 +212,7 @@ export function AccountHomePage() {
 export function AccountNotificationsPage() {
   const { preferences, setPreferences, location, homeLocation } = useAppContext()
   const { forecast } = useForecast(location)
+  const { t } = useI18n()
   const [pushStatus, setPushStatus] = useState<string | null>(null)
   const [pushLoading, setPushLoading] = useState(false)
   const backendReady = isBackendConfigured()
@@ -223,7 +224,7 @@ export function AccountNotificationsPage() {
       const granted = await requestNotificationPermission()
       if (!granted) {
         setPreferences({ notificationsEnabled: false })
-        setPushStatus('Notification permission was denied.')
+        setPushStatus(t('notifications.permissionDenied'))
         return
       }
 
@@ -234,15 +235,15 @@ export function AccountNotificationsPage() {
           homeLocation,
           timezone: forecast?.timezone ?? null,
         })
-        setPushStatus('Connected — morning reminders will be sent in English.')
+        setPushStatus(t('notifications.connected'))
       } else {
-        setPushStatus('Browser notifications enabled. Set VITE_API_URL on Vercel for server push.')
+        setPushStatus(t('notifications.browserOnly'))
       }
 
       setPreferences({ notificationsEnabled: true })
     } catch (err) {
       setPreferences({ notificationsEnabled: false })
-      setPushStatus(err instanceof Error ? err.message : 'Could not enable notifications.')
+      setPushStatus(err instanceof Error ? err.message : t('notifications.enableFailed'))
     } finally {
       setPushLoading(false)
     }
@@ -253,9 +254,9 @@ export function AccountNotificationsPage() {
     setPushStatus(null)
     try {
       await sendTestPush()
-      setPushStatus('Test notification sent.')
+      setPushStatus(t('notifications.testSent'))
     } catch (err) {
-      setPushStatus(err instanceof Error ? err.message : 'Test push failed.')
+      setPushStatus(err instanceof Error ? err.message : t('notifications.testFailed'))
     } finally {
       setPushLoading(false)
     }
@@ -263,11 +264,11 @@ export function AccountNotificationsPage() {
 
   return (
     <div className="page">
-      <AccountSubpageHeader title="Notifications" />
+      <AccountSubpageHeader title={t('notifications.title')} />
 
       <Card>
         <label className="field-label" htmlFor="morning-time">
-          Morning reminder (high-UV days only)
+          {t('notifications.morningLabel')}
         </label>
         <input
           id="morning-time"
@@ -277,13 +278,11 @@ export function AccountNotificationsPage() {
           onChange={(e) => setPreferences({ morningCheckTime: e.target.value })}
         />
         {!backendReady && (
-          <p className="warning-text">
-            Backend not linked — set <strong>VITE_API_URL</strong> on Vercel.
-          </p>
+          <p className="warning-text">{t('notifications.backendMissing')}</p>
         )}
         {forecast?.timezoneAbbreviation && (
           <p className="hint-text">
-            Reminder time uses the forecast location timezone ({forecast.timezoneAbbreviation}).
+            {t('notifications.timezoneHint', { tz: forecast.timezoneAbbreviation })}
           </p>
         )}
         <Button
@@ -294,10 +293,10 @@ export function AccountNotificationsPage() {
           style={{ marginTop: '0.75rem' }}
         >
           {pushLoading
-            ? 'Connecting…'
+            ? t('common.connecting')
             : preferences.notificationsEnabled
-              ? 'Notifications enabled'
-              : 'Enable notifications'}
+              ? t('notifications.enabled')
+              : t('notifications.enable')}
         </Button>
         {preferences.notificationsEnabled && backendReady && (
           <Button
@@ -307,7 +306,7 @@ export function AccountNotificationsPage() {
             disabled={pushLoading}
             style={{ marginTop: '0.5rem' }}
           >
-            Send test push
+            {t('notifications.sendTest')}
           </Button>
         )}
         {pushStatus && <p className="hint-text">{pushStatus}</p>}
@@ -317,14 +316,16 @@ export function AccountNotificationsPage() {
 }
 
 export function AccountTroubleshootingPage() {
+  const { t } = useI18n()
+
   return (
     <div className="page">
-      <AccountSubpageHeader title="Troubleshooting" />
+      <AccountSubpageHeader title={t('troubleshooting.title')} />
 
       <Card>
-        <p className="hint-text">Blank screen on your phone? Clear cached data and reload.</p>
+        <p className="hint-text">{t('troubleshooting.hint')}</p>
         <Button variant="secondary" fullWidth onClick={() => void clearAppCacheAndReload()}>
-          Clear cache and reload
+          {t('troubleshooting.clearCache')}
         </Button>
       </Card>
     </div>

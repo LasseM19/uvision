@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
-import { formatTimeInZone } from '../lib/timezone'
-import { timerPhaseLabel, type TimerPhase } from '../lib/sunscreenTimer'
-import { formatDuration } from '../lib/uvLogic'
+import { useI18n } from '../hooks/useI18n'
+import type { TimerPhase } from '../lib/sunscreenTimer'
 
 interface ActiveTimerStatusProps {
   phase: TimerPhase
@@ -26,19 +25,21 @@ export function ActiveTimerStatus({
   compact = false,
   children,
 }: ActiveTimerStatusProps) {
+  const { t, timerPhaseLabel, formatDuration, formatTimeInZone } = useI18n()
   const finished = isTimerFinished(phase)
   const zone = timeZone ?? 'UTC'
-  const reapplyTime =
-    nextReapplyAt != null ? formatTimeInZone(nextReapplyAt, zone) : null
+  const reapplyTime = nextReapplyAt != null ? formatTimeInZone(nextReapplyAt, zone) : null
   const tzSuffix = timezoneAbbreviation ? ` ${timezoneAbbreviation}` : ''
 
-  const countdownText = finished ? 'Reapply now!' : `${formatDuration(minutesLeft)} left`
+  const countdownText = finished
+    ? t('activeTimer.reapplyNow')
+    : t('activeTimer.timeLeft', { duration: formatDuration(minutesLeft) })
   const reapplyHint =
     reapplyTime == null
       ? null
       : finished
-        ? `Was due at ${reapplyTime}${tzSuffix}`
-        : `Reapply at ${reapplyTime}${tzSuffix}`
+        ? t('activeTimer.wasDueAt', { time: reapplyTime, tz: tzSuffix })
+        : t('activeTimer.reapplyAt', { time: reapplyTime, tz: tzSuffix })
 
   return (
     <div
@@ -51,7 +52,7 @@ export function ActiveTimerStatus({
       <div className="active-timer__header">
         <span className="active-timer__badge">
           <span className="active-timer__dot" aria-hidden />
-          {finished ? 'Timer finished' : 'Timer running'}
+          {finished ? t('activeTimer.timerFinished') : t('activeTimer.timerRunning')}
         </span>
         <span className="active-timer__phase">{timerPhaseLabel(phase)}</span>
       </div>

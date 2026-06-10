@@ -1,4 +1,5 @@
 import { useRef, useState, type ReactNode, type TouchEvent } from 'react'
+import { useI18n } from '../hooks/useI18n'
 
 const ACTION_WIDTH = 92
 const OPEN_THRESHOLD = ACTION_WIDTH * 0.35
@@ -11,6 +12,7 @@ interface SwipeToDeleteRowProps {
 }
 
 export function SwipeToDeleteRow({ onDelete, children, className = '' }: SwipeToDeleteRowProps) {
+  const { t } = useI18n()
   const [offset, setOffset] = useState(0)
   const [dragging, setDragging] = useState(false)
   const startX = useRef(0)
@@ -73,10 +75,10 @@ export function SwipeToDeleteRow({ onDelete, children, className = '' }: SwipeTo
       <button
         type="button"
         className="swipe-delete__action"
-        aria-label="Delete"
+        aria-label={t('common.delete')}
         onClick={onDelete}
       >
-        Delete
+        {t('common.delete')}
       </button>
       <div
         className={`swipe-delete__panel${dragging ? ' swipe-delete__panel--dragging' : ''}`}

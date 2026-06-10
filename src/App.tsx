@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { StandaloneShell } from './components/StandaloneShell'
 import { AppProvider, useAppContext } from './context/AppContext'
+import { useDocumentLanguage } from './hooks/useI18n'
 import { AccountPage } from './pages/AccountPage'
 import {
   AccountHomePage,
@@ -20,6 +21,7 @@ import { TimerPage } from './pages/TimerPage'
 function AppRoutes() {
   const { preferences } = useAppContext()
   const location = useLocation()
+  useDocumentLanguage()
 
   if (!preferences.onboardingComplete && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />

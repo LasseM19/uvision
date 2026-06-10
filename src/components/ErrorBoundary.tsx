@@ -1,6 +1,8 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { Button } from './Button'
+import { translate } from '../i18n'
 import { clearAppCacheAndReload } from '../lib/clearCache'
+import { loadState } from '../lib/storage'
 
 interface Props {
   children: ReactNode
@@ -31,15 +33,17 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      const lang = loadState().preferences.language
+
       return (
         <div className="error-boundary">
-          <h1>Something went wrong</h1>
-          <p>UVision hit an unexpected error. Try reloading, or clear cached data if the app stays blank.</p>
+          <h1>{translate(lang, 'error.crashTitle')}</h1>
+          <p>{translate(lang, 'error.crashBody')}</p>
           <Button fullWidth onClick={this.reload}>
-            Reload app
+            {translate(lang, 'error.reload')}
           </Button>
           <Button variant="secondary" fullWidth onClick={this.hardReset}>
-            Clear cache and reload
+            {translate(lang, 'error.clearCache')}
           </Button>
         </div>
       )

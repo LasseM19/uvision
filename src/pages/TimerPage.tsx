@@ -5,9 +5,9 @@ import { ActiveTimerStatus } from '../components/ActiveTimerStatus'
 import { ApplicationLogCard } from '../components/ApplicationLogCard'
 import { PageBrandHeader } from '../components/PageBrandHeader'
 import { useAppContext } from '../context/AppContext'
-import { getActivityLabel } from '../lib/storage'
+import { useI18n } from '../hooks/useI18n'
 import { calculateReapplyInterval } from '../lib/sunscreenTimer'
-import { formatTime, uvRiskColor, uvRiskLabel } from '../lib/uvLogic'
+import { uvRiskColor } from '../lib/uvLogic'
 import type { ActivityMode } from '../types'
 
 const activityModes: ActivityMode[] = ['normal', 'swimming', 'sports']
@@ -30,6 +30,7 @@ export function TimerPage() {
     devTriggerReapplyAlarm,
     logs,
   } = useAppContext()
+  const { t, uvRiskLabel, activityLabel, formatTime } = useI18n()
   const [activityMode, setActivityMode] = useState<ActivityMode>('normal')
 
   const previewInterval = calculateReapplyInterval(
@@ -52,11 +53,11 @@ export function TimerPage() {
 
   return (
     <div className="page">
-      <PageBrandHeader eyebrow="Timer" title="Sunscreen" />
+      <PageBrandHeader eyebrow={t('timer.eyebrow')} title={t('timer.title')} />
 
       {!location && (
         <Card className="banner-card">
-          <p className="hint-text">Set your location on Home first so we can calculate UV for your timer.</p>
+          <p className="hint-text">{t('timer.noLocation')}</p>
         </Card>
       )}
 
@@ -65,7 +66,7 @@ export function TimerPage() {
       >
         <div className="timer-uv-live">
           <div>
-            <p className="timer-uv-live__label">Current effective UV</p>
+            <p className="timer-uv-live__label">{t('timer.currentEffectiveUv')}</p>
             <p className="timer-uv-live__value" style={{ color: uvRiskColor(currentUv) }}>
               {currentUv}
             </p>
@@ -82,33 +83,37 @@ export function TimerPage() {
             timezoneAbbreviation={forecastTimezoneAbbreviation}
           >
             <p className="tracker-meta">
-              Applied {formatTime(new Date(activeTimer.appliedAt))} ·{' '}
-              {getActivityLabel(activeTimer.activityMode)} · UV {activeTimer.uvAtApplication} at application
+              {t('timer.appliedAt', {
+                time: formatTime(new Date(activeTimer.appliedAt)),
+                activity: activityLabel(activeTimer.activityMode),
+                uv: activeTimer.uvAtApplication,
+              })}
             </p>
             <p className="tracker-meta">
               {liveIntervalMinutes
-                ? `Reapply every ${liveIntervalMinutes} min at current UV ${currentUv}`
-                : `UV is low (${currentUv}) — extended protection window`}
+                ? t('timer.reapplyEvery', {
+                    minutes: liveIntervalMinutes,
+                    uv: currentUv,
+                  })
+                : t('timer.lowUvExtended', { uv: currentUv })}
             </p>
             <div className="tracker-actions">
               <Button fullWidth onClick={handleApply}>
-                I reapplied
+                {t('timer.iReapplied')}
               </Button>
               <Button variant="ghost" fullWidth onClick={dismissTimer}>
-                Clear timer
+                {t('timer.clearTimer')}
               </Button>
             </div>
           </ActiveTimerStatus>
         ) : (
           <>
-            <p className="timer-phase">No active protection</p>
-            <p className="tracker-empty">
-              Log when you apply sunscreen to start your reapply timer.
-            </p>
+            <p className="timer-phase">{t('timer.noActiveProtection')}</p>
+            <p className="tracker-empty">{t('timer.logToStart')}</p>
             <p className="tracker-meta">
               {previewInterval
-                ? `At current UV ${currentUv}, reapply every ${previewInterval} min`
-                : `UV is low (${currentUv}) — no reapply timer needed`}
+                ? t('timer.previewInterval', { uv: currentUv, minutes: previewInterval })
+                : t('timer.lowUvNoTimer', { uv: currentUv })}
             </p>
           </>
         )}
@@ -117,7 +122,7 @@ export function TimerPage() {
       {!activeTimer && (
         <>
           <section className="section">
-            <h2 className="section-title">Activity mode</h2>
+            <h2 className="section-title">{t('timer.activityMode')}</h2>
             <div className="pill-group">
               {activityModes.map((mode) => (
                 <button
@@ -126,25 +131,23 @@ export function TimerPage() {
                   className={`pill${activityMode === mode ? ' pill--active' : ''}`}
                   onClick={() => setActivityMode(mode)}
                 >
-                  {getActivityLabel(mode)}
+                  {activityLabel(mode)}
                 </button>
               ))}
             </div>
           </section>
 
           <Button fullWidth onClick={handleApply} disabled={!location || previewInterval === null}>
-            I just applied sunscreen
+            {t('timer.iJustApplied')}
           </Button>
-          {previewInterval === null && (
-            <p className="hint-text">UV is low right now — no reapply timer needed.</p>
-          )}
+          {previewInterval === null && <p className="hint-text">{t('timer.lowUvHint')}</p>}
         </>
       )}
 
       {logs.length > 0 && (
         <section className="section">
-          <h2 className="section-title">Recent applications</h2>
-          <p className="hint-text log-list-hint">Swipe left on an entry to delete.</p>
+          <h2 className="section-title">{t('timer.recentApplications')}</h2>
+          <p className="hint-text log-list-hint">{t('timer.swipeToDelete')}</p>
           <div className="log-list">
             {logs.slice(0, 5).map((log) => (
               <ApplicationLogCard
@@ -161,7 +164,7 @@ export function TimerPage() {
       {import.meta.env.DEV && devTriggerReapplyAlarm && (
         <section className="section">
           <Button variant="ghost" fullWidth onClick={devTriggerReapplyAlarm}>
-            [Dev] Preview reapply alarm
+            {t('timer.devPreviewAlarm')}
           </Button>
         </section>
       )}

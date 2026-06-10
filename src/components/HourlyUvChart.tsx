@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { HourlyForecast } from '../types'
-import { formatTimeInZone, isSameHourInZone } from '../lib/timezone'
+import { useI18n } from '../hooks/useI18n'
+import { isSameHourInZone } from '../lib/timezone'
 import { WeatherIconDisplay } from './WeatherIcon'
 import { uvRiskColor } from '../lib/uvLogic'
 
@@ -80,6 +81,7 @@ function isSameHour(a: Date, b: Date, timeZone: string): boolean {
 }
 
 export function HourlyUvChart({ hours, timeZone }: HourlyUvChartProps) {
+  const { t, formatTimeInZone } = useI18n()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [nowMs, setNowMs] = useState(() => Date.now())
   const now = new Date(nowMs)
@@ -129,7 +131,7 @@ export function HourlyUvChart({ hours, timeZone }: HourlyUvChartProps) {
 
   return (
     <div className="hourly-chart">
-      <div ref={scrollRef} className="hourly-chart__scroll" aria-label="Hourly UV forecast chart">
+      <div ref={scrollRef} className="hourly-chart__scroll" aria-label={t('chart.aria')}>
         <div className="hourly-chart__track" style={{ width: contentWidth }}>
           <svg
             className="hourly-chart__svg"
@@ -180,7 +182,7 @@ export function HourlyUvChart({ hours, timeZone }: HourlyUvChartProps) {
             style={{ left: nowX, color: uvRiskColor(nowUv) }}
           >
             <span className="hourly-chart__now-time">
-              Now · {formatTimeInZone(now, timeZone)}
+              {t('chart.now', { time: formatTimeInZone(now, timeZone) })}
             </span>
             <span className="hourly-chart__now-uv">UV {nowUv.toFixed(1)}</span>
           </div>

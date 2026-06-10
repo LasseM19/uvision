@@ -1,19 +1,21 @@
 import { NavLink } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
+import { useI18n } from '../hooks/useI18n'
 import { isTimerFinished } from './ActiveTimerStatus'
-
-const links = [
-  { to: '/', label: 'Home', icon: '☀' },
-  { to: '/timer', label: 'Timer', icon: '⏱' },
-  { to: '/account', label: 'Account', icon: '👤' },
-]
 
 export function BottomNav() {
   const { activeTimer, phase } = useAppContext()
+  const { t } = useI18n()
   const timerFinished = activeTimer ? isTimerFinished(phase) : false
 
+  const links = [
+    { to: '/', label: t('nav.home'), icon: '☀' },
+    { to: '/timer', label: t('nav.timer'), icon: '⏱' },
+    { to: '/account', label: t('nav.account'), icon: '👤' },
+  ]
+
   return (
-    <nav className="bottom-nav" aria-label="Main">
+    <nav className="bottom-nav" aria-label={t('nav.main')}>
       {links.map((link) => (
         <NavLink
           key={link.to}
@@ -27,7 +29,7 @@ export function BottomNav() {
             {link.to === '/timer' && activeTimer && (
               <span
                 className={`bottom-nav__timer-live${timerFinished ? ' bottom-nav__timer-live--finished' : ''}`}
-                aria-label={timerFinished ? 'Timer finished' : 'Timer running'}
+                aria-label={timerFinished ? t('nav.timerFinished') : t('nav.timerRunning')}
               />
             )}
             <span className="bottom-nav__icon" aria-hidden>

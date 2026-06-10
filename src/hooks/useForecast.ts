@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ForecastData, Location } from '../types'
+import { useAppContext } from '../context/AppContext'
+import { recommendationTextFromForecast, translate } from '../i18n'
 import { fetchForecast } from '../lib/openMeteo'
 
 interface UseForecastResult {
@@ -9,10 +11,28 @@ interface UseForecastResult {
   refresh: () => void
 }
 
+function localizeForecast(forecast: ForecastData, lang: ReturnType<typeof useAppContext>['preferences']['language']): ForecastData {
+  const today = forecast.daily[0]
+  const maxEffectiveUv = today?.maxEffectiveUv ?? 0
+  const hourlyEffective = forecast.hourlyToday.map((hour) => hour.effectiveUv)
+
+  return {
+    ...forecast,
+    recommendationText: recommendationTextFromForecast(lang, maxEffectiveUv, hourlyEffective),
+  }
+}
+
 export function useForecast(location: Location | null): UseForecastResult {
-  const [forecast, setForecast] = useState<ForecastData | null>(null)
+  const { preferences } = useAppContext()
+  const lang = preferences.language
+  const [rawForecast, setRawForecast] = useState<ForecastData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const forecast = useMemo(
+    () => (rawForecast ? localizeForecast(rawForecast, lang) : null),
+    [rawForecast, lang],
+  )
 
   const load = useCallback(async () => {
     if (!location) return
@@ -20,13 +40,13 @@ export function useForecast(location: Location | null): UseForecastResult {
     setError(null)
     try {
       const data = await fetchForecast(location)
-      setForecast(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setRawForecast(data)
+    } catch {
+      setError(translate(lang, 'error.forecastFailed'))
     } finally {
       setLoading(false)
     }
-  }, [location])
+  }, [location, lang])
 
   useEffect(() => {
     void load()

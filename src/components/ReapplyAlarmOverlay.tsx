@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Button } from './Button'
 import { SwipeToSnoozeSlider } from './SwipeToSnoozeSlider'
 import { useAppContext } from '../context/AppContext'
-import { formatTimeInZone } from '../lib/timezone'
+import { useI18n } from '../hooks/useI18n'
 import { REAPPLY_SNOOZE_MINUTES } from '../lib/sunscreenTimer'
 
 export function ReapplyAlarmOverlay() {
@@ -18,6 +18,7 @@ export function ReapplyAlarmOverlay() {
     preferences,
     currentUv,
   } = useAppContext()
+  const { t, formatTimeInZone } = useI18n()
   const vibratedRef = useRef(false)
 
   useEffect(() => {
@@ -40,7 +41,10 @@ export function ReapplyAlarmOverlay() {
   const zone = forecastTimezone ?? 'UTC'
   const dueLabel =
     liveNextReapplyAt != null
-      ? `Due at ${formatTimeInZone(liveNextReapplyAt, zone)}${forecastTimezoneAbbreviation ? ` ${forecastTimezoneAbbreviation}` : ''}`
+      ? t('alarm.dueAt', {
+          time: formatTimeInZone(liveNextReapplyAt, zone),
+          tz: forecastTimezoneAbbreviation ? ` ${forecastTimezoneAbbreviation}` : '',
+        })
       : null
 
   function handleReapplied() {
@@ -57,26 +61,21 @@ export function ReapplyAlarmOverlay() {
   return (
     <div className="reapply-alarm" role="alertdialog" aria-labelledby="reapply-alarm-title">
       <div className="reapply-alarm__panel">
-        <p className="reapply-alarm__eyebrow">Sunscreen reminder</p>
+        <p className="reapply-alarm__eyebrow">{t('alarm.eyebrow')}</p>
         <h1 id="reapply-alarm-title" className="reapply-alarm__title">
-          Time to reapply
+          {t('alarm.title')}
         </h1>
-        <p className="reapply-alarm__body">
-          Your protection window ended. Reapply sunscreen to stay protected.
-        </p>
+        <p className="reapply-alarm__body">{t('alarm.body')}</p>
         {dueLabel && <p className="reapply-alarm__due">{dueLabel}</p>}
 
         <SwipeToSnoozeSlider onSnooze={snoozeReapplyAlarm} />
 
         <Button fullWidth onClick={handleReapplied} disabled={!location}>
-          I just reapplied
+          {t('alarm.iJustReapplied')}
         </Button>
-        {!location && (
-          <p className="reapply-alarm__note">Set your location on Home to log a new application.</p>
-        )}
+        {!location && <p className="reapply-alarm__note">{t('alarm.noLocation')}</p>}
         <p className="reapply-alarm__note">
-          Snoozing gives you {REAPPLY_SNOOZE_MINUTES} more minutes — the alarm will return if you
-          have not reapplied.
+          {t('alarm.snoozeNote', { minutes: REAPPLY_SNOOZE_MINUTES })}
         </p>
       </div>
     </div>

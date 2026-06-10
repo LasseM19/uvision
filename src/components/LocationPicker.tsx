@@ -3,15 +3,18 @@ import { Button } from './Button'
 import { Card } from './Card'
 import { LocationSettingsPrompt } from './LocationSettingsPrompt'
 import type { Location } from '../types'
+import { useAppContext } from '../context/AppContext'
+import { useI18n } from '../hooks/useI18n'
 import {
-  geolocationErrorMessage,
-  insecureContextMessage,
+  geolocationErrorMessageForLang,
+  insecureContextMessageForLang,
+} from '../i18n'
+import {
   isPermissionDeniedError,
   isSecureContextForGeolocation,
   resolveCurrentLocation,
 } from '../lib/geolocation'
 import { searchCities } from '../lib/openMeteo'
-import { useAppContext } from '../context/AppContext'
 
 interface LocationPickerProps {
   onSelect: (location: Location) => void
@@ -21,6 +24,7 @@ interface LocationPickerProps {
 export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
   const { locationPermissionDenied, markLocationAccessGranted, markLocationAccessDenied } =
     useAppContext()
+  const { t, lang } = useI18n()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Location[]>([])
   const [loading, setLoading] = useState(false)
@@ -50,19 +54,19 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
         setLocationBlocked(true)
         markLocationAccessDenied()
       } else {
-        setError(geolocationErrorMessage(err))
+        setError(geolocationErrorMessageForLang(lang, err))
       }
     } finally {
       gpsInFlightRef.current = false
       setGpsLoading(false)
     }
-  }, [markLocationAccessDenied, markLocationAccessGranted, onSelect])
+  }, [lang, markLocationAccessDenied, markLocationAccessGranted, onSelect])
 
   useEffect(() => {
     if (!secureContext) {
-      setError(insecureContextMessage())
+      setError(insecureContextMessageForLang(lang))
     }
-  }, [secureContext])
+  }, [lang, secureContext])
 
   useEffect(() => {
     if (query.length < 2) {
@@ -76,53 +80,53 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
         const cities = await searchCities(query)
         setResults(cities)
         if (cities.length === 0) {
-          setError('No cities found — try a different spelling.')
+          setError(t('locationPicker.noCities'))
         } else if (!locationBlocked) {
           setError(null)
         }
       } catch {
-        setError('Could not search cities. Check your internet connection.')
+        setError(t('locationPicker.searchFailed'))
       } finally {
         setLoading(false)
       }
     }, 300)
 
     return () => window.clearTimeout(id)
-  }, [query, locationBlocked])
+  }, [query, locationBlocked, t])
 
   return (
     <Card className="location-picker">
       <div className="location-picker-header">
         <p className="section-title" style={{ margin: 0 }}>
-          Your location
+          {t('locationPicker.title')}
         </p>
         {onClose && (
-          <button type="button" className="ghost-icon-btn" onClick={onClose} aria-label="Close">
+          <button type="button" className="ghost-icon-btn" onClick={onClose} aria-label={t('common.close')}>
             ✕
           </button>
         )}
       </div>
-      <p className="hint-text">We use your location for UV forecasts only — never shared.</p>
+      <p className="hint-text">{t('locationPicker.privacy')}</p>
 
       <LocationSettingsPrompt visible={locationBlocked} />
 
-      {!secureContext && <p className="warning-text">{insecureContextMessage()}</p>}
+      {!secureContext && <p className="warning-text">{insecureContextMessageForLang(lang)}</p>}
 
       <Button fullWidth onClick={() => void useGps()} disabled={gpsLoading || !secureContext}>
-        {gpsLoading ? 'Finding you…' : 'Use my current location'}
+        {gpsLoading ? t('locationPicker.findingYou') : t('locationPicker.useCurrent')}
       </Button>
       <div className="divider">
-        <span>or search a city</span>
+        <span>{t('common.orSearchCity')}</span>
       </div>
       <input
         type="search"
         className="text-input"
-        placeholder="Amsterdam, Utrecht, Rotterdam…"
+        placeholder={t('common.cityPlaceholder')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         autoComplete="off"
       />
-      {loading && <p className="hint-text">Searching…</p>}
+      {loading && <p className="hint-text">{t('common.searching')}</p>}
       {error && !locationBlocked && <p className="error-text">{error}</p>}
       {results.length > 0 && (
         <ul className="city-results">

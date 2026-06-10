@@ -6,10 +6,12 @@ import { AccountSubpageHeader } from '../components/AccountSubpageHeader'
 import { ApplicationLogCard } from '../components/ApplicationLogCard'
 import { Logo } from '../components/Logo'
 import { useAppContext } from '../context/AppContext'
-import { getSkinTypeLabel, getSpfLabel } from '../lib/storage'
+import { useI18n } from '../hooks/useI18n'
+import { getSpfLabel } from '../lib/storage'
 
 export function HistoryPage() {
   const { logs, deleteApplicationLog } = useAppContext()
+  const { t } = useI18n()
 
   const stats = useMemo(() => {
     const now = Date.now()
@@ -23,40 +25,40 @@ export function HistoryPage() {
 
   return (
     <div className="page">
-      <AccountSubpageHeader title="Your protection" />
+      <AccountSubpageHeader title={t('history.title')} />
 
       <Card className="stats-card">
         <p className="stats-value">{stats.daysWithApplication}</p>
-        <p className="stats-label">days protected in the last 14 days</p>
-        <p className="stats-sub">{stats.total} applications logged</p>
+        <p className="stats-label">{t('history.daysProtected')}</p>
+        <p className="stats-sub">{t('history.applicationsLogged', { count: stats.total })}</p>
       </Card>
 
       {logs.length === 0 ? (
         <Card>
-          <p>No applications logged yet. Head to the timer when you apply sunscreen.</p>
+          <p>{t('history.empty')}</p>
           <Link to="/timer">
             <Button variant="secondary" fullWidth>
-              Go to timer
+              {t('history.goToTimer')}
             </Button>
           </Link>
         </Card>
       ) : (
         <>
-          <p className="hint-text log-list-hint">Swipe left on an entry to delete.</p>
+          <p className="hint-text log-list-hint">{t('timer.swipeToDelete')}</p>
           <div className="log-list">
-          {logs.map((log) => (
-            <ApplicationLogCard key={log.id} log={log} onDelete={deleteApplicationLog} />
-          ))}
+            {logs.map((log) => (
+              <ApplicationLogCard key={log.id} log={log} onDelete={deleteApplicationLog} />
+            ))}
           </div>
         </>
       )}
-
     </div>
   )
 }
 
 export function OnboardingPage() {
   const { preferences, setPreferences } = useAppContext()
+  const { t, skinTypeLabel } = useI18n()
 
   function finish() {
     setPreferences({ onboardingComplete: true })
@@ -73,17 +75,15 @@ export function OnboardingPage() {
       </div>
       <header className="page-header onboarding-header">
         <div>
-          <p className="eyebrow">Welcome</p>
-          <h1 className="page-title">Let&apos;s personalize UVision</h1>
+          <p className="eyebrow">{t('onboarding.welcome')}</p>
+          <h1 className="page-title">{t('onboarding.title')}</h1>
         </div>
       </header>
 
-      <p className="intro-text">
-        A few quick choices help us calculate when you should reapply sunscreen.
-      </p>
+      <p className="intro-text">{t('onboarding.intro')}</p>
 
       <section className="section">
-        <h2 className="section-title">Your skin type</h2>
+        <h2 className="section-title">{t('onboarding.skinType')}</h2>
         <div className="option-list">
           {([1, 2, 3, 4, 5, 6] as const).map((type) => (
             <button
@@ -92,15 +92,15 @@ export function OnboardingPage() {
               className={`option-row${preferences.skinType === type ? ' option-row--active' : ''}`}
               onClick={() => setPreferences({ skinType: type })}
             >
-              <span>Type {type}</span>
-              <span className="option-sub">{getSkinTypeLabel(type)}</span>
+              <span>{t('skinPage.typeN', { n: type })}</span>
+              <span className="option-sub">{skinTypeLabel(type)}</span>
             </button>
           ))}
         </div>
       </section>
 
       <section className="section">
-        <h2 className="section-title">Your usual SPF</h2>
+        <h2 className="section-title">{t('onboarding.usualSpf')}</h2>
         <div className="pill-group">
           {([15, 30, 50] as const).map((spf) => (
             <button
@@ -116,10 +116,10 @@ export function OnboardingPage() {
       </section>
 
       <section className="section">
-        <h2 className="section-title">Morning reminder</h2>
+        <h2 className="section-title">{t('onboarding.morningReminder')}</h2>
         <Card>
           <label className="field-label" htmlFor="onboard-time">
-            What time should we remind you on high-UV days?
+            {t('onboarding.morningHint')}
           </label>
           <input
             id="onboard-time"
@@ -132,7 +132,7 @@ export function OnboardingPage() {
       </section>
 
       <Button fullWidth onClick={finish}>
-        Get started
+        {t('onboarding.getStarted')}
       </Button>
     </div>
   )

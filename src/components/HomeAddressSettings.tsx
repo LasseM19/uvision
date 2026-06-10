@@ -3,9 +3,10 @@ import { Button } from './Button'
 import { Card } from './Card'
 import { LocationSettingsPrompt } from './LocationSettingsPrompt'
 import { useAppContext } from '../context/AppContext'
+import { useI18n } from '../hooks/useI18n'
+import { geolocationErrorMessageForLang } from '../i18n'
 import {
   ensureGeolocationAccess,
-  geolocationErrorMessage,
   isPermissionDeniedError,
   isSecureContextForGeolocation,
   reverseGeocodeLabel,
@@ -28,6 +29,7 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
     markLocationAccessDenied,
     locationPermissionDenied,
   } = useAppContext()
+  const { t, lang } = useI18n()
 
   const [query, setQuery] = useState(homeLocation?.label ?? '')
   const [results, setResults] = useState<Location[]>([])
@@ -52,14 +54,14 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
       try {
         setResults(await searchCities(query))
       } catch {
-        setError('Could not search. Check your connection.')
+        setError(t('homeAddress.searchFailed'))
       } finally {
         setLoading(false)
       }
     }, 300)
 
     return () => window.clearTimeout(id)
-  }, [query])
+  }, [query, t])
 
   async function saveHome(latitude: number, longitude: number, label: string) {
     setSaving(true)
@@ -74,7 +76,7 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
       })
       onHomeSaved?.()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save home.')
+      setError(err instanceof Error ? err.message : t('homeAddress.couldNotSave'))
     } finally {
       setSaving(false)
     }
@@ -94,7 +96,7 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
         setShowHelp(true)
         markLocationAccessDenied()
       } else {
-        setError(geolocationErrorMessage(err))
+        setError(geolocationErrorMessageForLang(lang, err))
       }
     } finally {
       setSaving(false)
@@ -105,32 +107,32 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
 
   return (
     <Card>
-      <p className="hint-text">
-        Set your home address for leave-home sunscreen reminders. No map needed — we use GPS in
-        the background when alerts are on.
-      </p>
+      <p className="hint-text">{t('homeAddress.hint')}</p>
 
       {homeLocation && (
         <p className="location-settings-current">
-          Home: {homeLocation.label} · {homeLocation.radiusMeters} m radius
+          {t('homeAddress.homeRadius', {
+            label: homeLocation.label,
+            radius: homeLocation.radiusMeters,
+          })}
         </p>
       )}
 
       <LocationSettingsPrompt visible={showHelp} />
 
       <label className="field-label" htmlFor="home-address">
-        Home address or city
+        {t('homeAddress.addressLabel')}
       </label>
       <input
         id="home-address"
         type="search"
         className="text-input"
-        placeholder="Amsterdam, Utrecht…"
+        placeholder={t('common.homePlaceholder')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         autoComplete="off"
       />
-      {loading && <p className="hint-text">Searching…</p>}
+      {loading && <p className="hint-text">{t('common.searching')}</p>}
       {results.length > 0 && (
         <ul className="city-results">
           {results.map((city) => (
@@ -156,12 +158,12 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
           disabled={saving}
           onClick={() => void useCurrentLocation()}
         >
-          {saving ? 'Saving…' : 'Use my current location as home'}
+          {saving ? t('common.saving') : t('homeAddress.useCurrentAsHome')}
         </Button>
       )}
 
       <section className="section" style={{ marginTop: '1rem', marginBottom: 0 }}>
-        <h3 className="section-title">Alert radius</h3>
+        <h3 className="section-title">{t('homeAddress.alertRadius')}</h3>
         <div className="pill-group">
           {radiusOptions.map((radius) => (
             <button
@@ -179,12 +181,12 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
             </button>
           ))}
         </div>
-        <p className="hint-text">Larger radius = fewer false alerts near home.</p>
+        <p className="hint-text">{t('homeAddress.radiusHint')}</p>
       </section>
 
       {homeLocation && (
         <Button variant="ghost" fullWidth style={{ marginTop: '0.75rem' }} onClick={clearHomeLocation}>
-          Remove home
+          {t('homeAddress.removeHome')}
         </Button>
       )}
 
