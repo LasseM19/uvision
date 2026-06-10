@@ -31,6 +31,7 @@ import {
   getTimerPhase,
   type TimerPhase,
 } from '../lib/sunscreenTimer'
+import { generateId } from '../lib/id'
 
 interface ApplySunscreenInput {
   uv: number
@@ -108,7 +109,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     const log: ApplicationLog = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       appliedAt: timer.appliedAt,
       uvAtApplication: input.uv,
       activityMode: input.activityMode,
