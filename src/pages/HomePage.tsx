@@ -28,7 +28,7 @@ export function HomePage() {
     forecastTimezone,
     forecastTimezoneAbbreviation,
   } = useAppContext()
-  const { forecast, loading, error, refresh } = useForecast(location)
+  const { forecast, loading, error, refresh } = useForecast(location, preferences.language)
   const { t, uvRiskLabel, recommendationBadge, formatTimeInZone, formatDateInZone } = useI18n()
 
   const today = forecast?.daily[0]

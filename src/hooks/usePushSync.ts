@@ -7,7 +7,7 @@ import { useForecast } from './useForecast'
 /** Keeps Railway push subscription in sync with local prefs. */
 export function usePushSync() {
   const { preferences, location, homeLocation } = useAppContext()
-  const { forecast } = useForecast(location)
+  const { forecast } = useForecast(location, preferences.language)
   const timerRef = useRef<number | null>(null)
 
   useEffect(() => {

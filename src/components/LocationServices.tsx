@@ -35,7 +35,7 @@ export function LocationServices() {
     enabled: trackingEnabled,
     onPermissionDenied: handlePermissionDenied,
   })
-  const { forecast } = useForecast(location)
+  const { forecast } = useForecast(location, preferences.language)
   const wasAtHomeRef = useRef<boolean | null>(null)
 
   useEffect(() => {

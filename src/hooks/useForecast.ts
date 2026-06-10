@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { ForecastData, Location } from '../types'
-import { useAppContext } from '../context/AppContext'
+import type { AppLanguage, ForecastData, Location } from '../types'
 import { recommendationTextFromForecast, translate } from '../i18n'
 import { fetchForecast } from '../lib/openMeteo'
 
@@ -11,7 +10,7 @@ interface UseForecastResult {
   refresh: () => void
 }
 
-function localizeForecast(forecast: ForecastData, lang: ReturnType<typeof useAppContext>['preferences']['language']): ForecastData {
+function localizeForecast(forecast: ForecastData, lang: AppLanguage): ForecastData {
   const today = forecast.daily[0]
   const maxEffectiveUv = today?.maxEffectiveUv ?? 0
   const hourlyEffective = forecast.hourlyToday.map((hour) => hour.effectiveUv)
@@ -22,9 +21,7 @@ function localizeForecast(forecast: ForecastData, lang: ReturnType<typeof useApp
   }
 }
 
-export function useForecast(location: Location | null): UseForecastResult {
-  const { preferences } = useAppContext()
-  const lang = preferences.language
+export function useForecast(location: Location | null, lang: AppLanguage): UseForecastResult {
   const [rawForecast, setRawForecast] = useState<ForecastData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

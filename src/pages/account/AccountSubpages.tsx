@@ -211,7 +211,7 @@ export function AccountHomePage() {
 
 export function AccountNotificationsPage() {
   const { preferences, setPreferences, location, homeLocation } = useAppContext()
-  const { forecast } = useForecast(location)
+  const { forecast } = useForecast(location, preferences.language)
   const { t } = useI18n()
   const [pushStatus, setPushStatus] = useState<string | null>(null)
   const [pushLoading, setPushLoading] = useState(false)

@@ -106,7 +106,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeTimer, setLocalTimer] = useState<ActiveTimer | null>(initial.activeTimer)
   const [logs, setLogs] = useState<ApplicationLog[]>(initial.applicationLogs)
   const [tick, setTick] = useState(0)
-  const { forecast } = useForecast(location)
+  const { forecast } = useForecast(location, preferences.language)
 
   useEffect(() => {
     const id = window.setInterval(() => setTick((t) => t + 1), 1000)
