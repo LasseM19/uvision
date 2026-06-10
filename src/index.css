@@ -173,7 +173,7 @@ input {
   width: min(var(--max-width), calc(100% - 2 * var(--page-inset-x)));
   height: var(--nav-height);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   background: var(--color-white);
   border-top: 1px solid var(--color-border);
   padding: 0.5rem 0 calc(0.625rem + env(safe-area-inset-bottom));
@@ -646,6 +646,7 @@ input {
 }
 
 .location-help-compact {
+  margin-bottom: 0.875rem;
   padding: 0.75rem 0.875rem;
   border-radius: 12px;
   background: var(--color-orange-soft);
@@ -749,6 +750,113 @@ input {
   background: var(--color-white);
   color: var(--color-text);
   text-align: center;
+}
+
+.bottom-nav__label {
+  font-size: 0.625rem;
+}
+
+.location-map-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.location-map {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.map-card {
+  padding: 0.75rem;
+}
+
+.location-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.location-map-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.location-map-legend__dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+}
+
+.location-map-legend__dot--you {
+  background: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+.location-map-legend__dot--home {
+  background: var(--color-orange);
+}
+
+.location-map-distance {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.map-user-marker span {
+  display: block;
+  color: #2563eb;
+  font-size: 1.25rem;
+  line-height: 1;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.9);
+}
+
+.map-home-marker span {
+  display: block;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.map-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.map-settings-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+}
+
+.departure-banner {
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--color-orange);
+}
+
+.departure-banner__title {
+  margin: 0 0 0.375rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.departure-banner__body {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.departure-banner__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-top: 0.75rem;
 }
 
 .error-boundary h1 {

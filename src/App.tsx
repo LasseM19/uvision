@@ -6,6 +6,7 @@ import { ForecastPage } from './pages/ForecastPage'
 import { HomePage } from './pages/HomePage'
 import { LearnPage } from './pages/LearnPage'
 import { HistoryPage, OnboardingPage, SettingsPage } from './pages/SettingsPage'
+import { MapPage } from './pages/MapPage'
 import { TrackerPage } from './pages/TrackerPage'
 
 function AppRoutes() {
@@ -32,6 +33,7 @@ function AppRoutes() {
       />
       <Route element={<Layout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/map" element={<MapPage />} />
         <Route path="/tracker" element={<TrackerPage />} />
         <Route path="/forecast" element={<ForecastPage />} />
         <Route path="/learn" element={<LearnPage />} />

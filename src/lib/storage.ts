@@ -1,6 +1,8 @@
 import type {
   ActivityMode,
   ApplicationLog,
+  HomeGeofenceRadius,
+  HomeLocation,
   Location,
   SkinType,
   SpfLevel,
@@ -27,6 +29,8 @@ export function loadState(): StoredState {
   return {
     preferences: { ...DEFAULT_PREFERENCES, ...raw.preferences },
     location: raw.location ?? null,
+    homeLocation: raw.homeLocation ?? null,
+    lastDepartureAlertDate: raw.lastDepartureAlertDate ?? null,
     applicationLogs: raw.applicationLogs ?? [],
     activeTimer: raw.activeTimer ?? null,
   }
@@ -37,6 +41,11 @@ export function saveState(partial: Partial<StoredState>): StoredState {
   const next: StoredState = {
     preferences: partial.preferences ?? current.preferences,
     location: partial.location !== undefined ? partial.location : current.location,
+    homeLocation: partial.homeLocation !== undefined ? partial.homeLocation : current.homeLocation,
+    lastDepartureAlertDate:
+      partial.lastDepartureAlertDate !== undefined
+        ? partial.lastDepartureAlertDate
+        : current.lastDepartureAlertDate,
     applicationLogs: partial.applicationLogs ?? current.applicationLogs,
     activeTimer: partial.activeTimer !== undefined ? partial.activeTimer : current.activeTimer,
   }
@@ -54,6 +63,27 @@ export function updatePreferences(prefs: Partial<UserPreferences>): UserPreferen
 export function saveLocation(location: Location): Location {
   saveState({ location })
   return location
+}
+
+export function saveHomeLocation(home: HomeLocation): HomeLocation {
+  saveState({ homeLocation: home })
+  return home
+}
+
+export function clearHomeLocation(): void {
+  saveState({ homeLocation: null })
+}
+
+export function markDepartureAlertSent(dateKey: string): void {
+  saveState({ lastDepartureAlertDate: dateKey })
+}
+
+export function getLastDepartureAlertDate(): string | null {
+  return loadState().lastDepartureAlertDate
+}
+
+export function getHomeGeofenceRadiusLabel(radius: HomeGeofenceRadius): string {
+  return `${radius} m`
 }
 
 export function addApplicationLog(log: ApplicationLog): ApplicationLog[] {

@@ -11,16 +11,21 @@ import type {
   ActiveTimer,
   ActivityMode,
   ApplicationLog,
+  HomeLocation,
+  LivePosition,
   Location,
   SkinType,
   SpfLevel,
   UserPreferences,
 } from '../types'
 import { DEFAULT_PREFERENCES } from '../types'
+import type { DepartureAlertCopy } from '../lib/notifications'
 import {
   addApplicationLog,
   clearActiveTimer,
+  clearHomeLocation as clearStoredHome,
   loadState,
+  saveHomeLocation,
   saveLocation,
   setActiveTimer,
   updatePreferences,
@@ -44,8 +49,15 @@ interface ApplySunscreenInput {
 interface AppContextValue {
   preferences: UserPreferences
   location: Location | null
+  homeLocation: HomeLocation | null
+  livePosition: LivePosition | null
+  departureBanner: DepartureAlertCopy | null
   setPreferences: (prefs: Partial<UserPreferences>) => void
   setLocation: (location: Location) => void
+  setHomeLocation: (home: HomeLocation) => void
+  clearHomeLocation: () => void
+  setLivePosition: (position: LivePosition | null) => void
+  setDepartureBanner: (copy: DepartureAlertCopy | null) => void
   activeTimer: ActiveTimer | null
   phase: TimerPhase
   minutesLeft: number
@@ -60,6 +72,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const initial = useMemo(() => loadState(), [])
   const [preferences, setPrefsState] = useState(initial.preferences)
   const [location, setLocState] = useState<Location | null>(initial.location)
+  const [homeLocation, setHomeState] = useState<HomeLocation | null>(initial.homeLocation)
+  const [livePosition, setLivePositionState] = useState<LivePosition | null>(null)
+  const [departureBanner, setDepartureBannerState] = useState<DepartureAlertCopy | null>(null)
   const [activeTimer, setLocalTimer] = useState<ActiveTimer | null>(initial.activeTimer)
   const [logs, setLogs] = useState<ApplicationLog[]>(initial.applicationLogs)
   const [, setTick] = useState(0)
@@ -82,6 +97,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setLocation = useCallback((loc: Location) => {
     saveLocation(loc)
     setLocState(loc)
+  }, [])
+
+  const setHomeLocation = useCallback((home: HomeLocation) => {
+    saveHomeLocation(home)
+    setHomeState(home)
+  }, [])
+
+  const clearHomeLocation = useCallback(() => {
+    clearStoredHome()
+    setHomeState(null)
+    setDepartureBannerState(null)
+  }, [])
+
+  const setLivePosition = useCallback((position: LivePosition | null) => {
+    setLivePositionState(position)
+  }, [])
+
+  const setDepartureBanner = useCallback((copy: DepartureAlertCopy | null) => {
+    setDepartureBannerState(copy)
   }, [])
 
   const applySunscreen = useCallback((input: ApplySunscreenInput) => {
@@ -121,6 +155,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLocalTimer(timer)
     const nextLogs = addApplicationLog(log)
     setLogs(nextLogs)
+    setDepartureBannerState(null)
   }, [])
 
   const dismissTimer = useCallback(() => {
@@ -132,8 +167,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     () => ({
       preferences,
       location,
+      homeLocation,
+      livePosition,
+      departureBanner,
       setPreferences,
       setLocation,
+      setHomeLocation,
+      clearHomeLocation,
+      setLivePosition,
+      setDepartureBanner,
       activeTimer,
       phase,
       minutesLeft,
@@ -144,8 +186,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [
       preferences,
       location,
+      homeLocation,
+      livePosition,
+      departureBanner,
       setPreferences,
       setLocation,
+      setHomeLocation,
+      clearHomeLocation,
+      setLivePosition,
+      setDepartureBanner,
       activeTimer,
       phase,
       minutesLeft,

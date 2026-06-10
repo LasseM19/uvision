@@ -5,6 +5,7 @@ import { Card } from '../components/Card'
 import { LocationPicker } from '../components/LocationPicker'
 import { useAppContext } from '../context/AppContext'
 import { clearAppCacheAndReload } from '../lib/clearCache'
+import { requestNotificationPermission } from '../lib/notifications'
 import { getSkinTypeLabel, getSpfLabel } from '../lib/storage'
 
 export function HistoryPage() {
@@ -69,13 +70,12 @@ export function HistoryPage() {
 }
 
 export function SettingsPage() {
-  const { preferences, setPreferences, location, setLocation } = useAppContext()
+  const { preferences, setPreferences, location, setLocation, homeLocation } = useAppContext()
   const [showLocationPicker, setShowLocationPicker] = useState(false)
 
-  async function requestNotifications() {
-    if (!('Notification' in window)) return
-    const permission = await Notification.requestPermission()
-    setPreferences({ notificationsEnabled: permission === 'granted' })
+  async function enableNotifications() {
+    const granted = await requestNotificationPermission()
+    setPreferences({ notificationsEnabled: granted })
   }
 
   return (
@@ -141,6 +141,42 @@ export function SettingsPage() {
       </section>
 
       <section className="section">
+        <h2 className="section-title">Home &amp; map</h2>
+        <Card>
+          <p className="hint-text">
+            Set your home on the map to see your position and get leave-home sunscreen reminders on
+            high-UV days.
+          </p>
+          <Link to="/map">
+            <Button variant="secondary" fullWidth style={{ marginTop: '0.75rem' }}>
+              {homeLocation ? `Home: ${homeLocation.label}` : 'Open map & set home'}
+            </Button>
+          </Link>
+        </Card>
+      </section>
+
+      <section className="section">
+        <h2 className="section-title">Leave-home alerts</h2>
+        <Card>
+          <p className="hint-text">
+            While UVision is open, we detect when you leave your home zone and alert you in English
+            if UV is high. Push notifications work when the app is in the background only if
+            installed as a home-screen app.
+          </p>
+          <Button
+            variant={preferences.leaveHomeAlertsEnabled ? 'secondary' : 'primary'}
+            fullWidth
+            style={{ marginTop: '0.75rem' }}
+            onClick={() =>
+              setPreferences({ leaveHomeAlertsEnabled: !preferences.leaveHomeAlertsEnabled })
+            }
+          >
+            {preferences.leaveHomeAlertsEnabled ? 'Leave-home alerts on' : 'Enable leave-home alerts'}
+          </Button>
+        </Card>
+      </section>
+
+      <section className="section">
         <h2 className="section-title">Morning check</h2>
         <Card>
           <label className="field-label" htmlFor="morning-time">
@@ -154,13 +190,12 @@ export function SettingsPage() {
             onChange={(e) => setPreferences({ morningCheckTime: e.target.value })}
           />
           <p className="hint-text">
-            Push notifications require installing UVision and enabling alerts. Backend setup coming
-            next.
+            Enable push notifications for leave-home and morning reminders. Messages are in English.
           </p>
           <Button
             variant="secondary"
             fullWidth
-            onClick={() => void requestNotifications()}
+            onClick={() => void enableNotifications()}
             style={{ marginTop: '0.75rem' }}
           >
             {preferences.notificationsEnabled ? 'Notifications enabled' : 'Enable notifications'}

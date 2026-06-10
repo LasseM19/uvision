@@ -15,12 +15,31 @@ export interface Location {
   label: string
 }
 
+export type HomeGeofenceRadius = 100 | 150 | 200 | 300
+
+export interface HomeLocation {
+  latitude: number
+  longitude: number
+  label: string
+  radiusMeters: HomeGeofenceRadius
+  setAt: string
+}
+
+export interface LivePosition {
+  latitude: number
+  longitude: number
+  accuracy: number | null
+  updatedAt: number
+}
+
 export interface UserPreferences {
   skinType: SkinType
   spf: SpfLevel
   morningCheckTime: string
   onboardingComplete: boolean
   notificationsEnabled: boolean
+  leaveHomeAlertsEnabled: boolean
+  homeGeofenceRadiusMeters: HomeGeofenceRadius
 }
 
 export interface HourlyForecast {
@@ -72,6 +91,8 @@ export interface ActiveTimer {
 export interface StoredState {
   preferences: UserPreferences
   location: Location | null
+  homeLocation: HomeLocation | null
+  lastDepartureAlertDate: string | null
   applicationLogs: ApplicationLog[]
   activeTimer: ActiveTimer | null
 }
@@ -82,4 +103,6 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   morningCheckTime: '08:00',
   onboardingComplete: false,
   notificationsEnabled: false,
+  leaveHomeAlertsEnabled: false,
+  homeGeofenceRadiusMeters: 150,
 }

@@ -264,3 +264,31 @@ export async function resolveCurrentLocation(): Promise<Location> {
   const label = await reverseGeocodeLabel(latitude, longitude)
   return { latitude, longitude, label }
 }
+
+export interface WatchPositionOptions {
+  enableHighAccuracy?: boolean
+  maximumAge?: number
+  timeout?: number
+}
+
+export function watchGeolocationPosition(
+  onUpdate: (position: GeolocationPosition) => void,
+  onError?: (error: GeolocationPositionError) => void,
+  options: WatchPositionOptions = {},
+): () => void {
+  if (!isGeolocationSupported() || !isSecureContextForGeolocation()) {
+    return () => undefined
+  }
+
+  const watchId = navigator.geolocation.watchPosition(
+    onUpdate,
+    onError,
+    {
+      enableHighAccuracy: options.enableHighAccuracy ?? true,
+      maximumAge: options.maximumAge ?? 30_000,
+      timeout: options.timeout ?? 15_000,
+    },
+  )
+
+  return () => navigator.geolocation.clearWatch(watchId)
+}
