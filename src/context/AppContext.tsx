@@ -40,6 +40,8 @@ import {
   buildTimerSchedule,
   calculateReapplyInterval,
   computeLiveTimerState,
+  isReapplyAlarmActive,
+  snoozeUntilIso,
   type TimerPhase,
 } from '../lib/sunscreenTimer'
 import { generateId } from '../lib/id'
@@ -77,11 +79,15 @@ interface AppContextValue {
   liveNextReapplyAt: Date | null
   forecastTimezone: string | null
   forecastTimezoneAbbreviation: string | null
+  reapplyAlarmActive: boolean
   logs: ApplicationLog[]
   applySunscreen: (input: ApplySunscreenInput) => void
+  snoozeReapplyAlarm: () => void
   deleteApplicationLog: (id: string) => void
   dismissTimer: () => void
   logout: () => Promise<void>
+  /** Local dev only — forces the reapply alarm overlay for testing. */
+  devTriggerReapplyAlarm?: () => void
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -124,6 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const liveNextReapplyAt = liveTimer?.nextReapplyAt ?? null
   const forecastTimezone = forecast?.timezone ?? null
   const forecastTimezoneAbbreviation = forecast?.timezoneAbbreviation ?? null
+  const reapplyAlarmActive = isReapplyAlarmActive(activeTimer, phase)
 
   const setPreferences = useCallback((prefs: Partial<UserPreferences>) => {
     const next = updatePreferences(prefs)
@@ -196,6 +203,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activityMode: input.activityMode,
       uvAtApplication: input.uv,
       nextReapplyAt,
+      snoozedUntil: null,
     }
 
     const log: ApplicationLog = {
@@ -219,10 +227,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLocalTimer(null)
   }, [])
 
+  const snoozeReapplyAlarm = useCallback(() => {
+    setLocalTimer((current) => {
+      if (!current) return current
+      const next: ActiveTimer = { ...current, snoozedUntil: snoozeUntilIso() }
+      setActiveTimer(next)
+      return next
+    })
+  }, [])
+
   const deleteApplicationLog = useCallback((id: string) => {
     const nextLogs = removeApplicationLog(id)
     setLogs(nextLogs)
   }, [])
+
+  const devTriggerReapplyAlarm = import.meta.env.DEV
+    ? () => {
+        const appliedAt = new Date(Date.now() - 120 * 60_000)
+        const uv = currentUv || activeTimer?.uvAtApplication || 5
+        const activityMode = activeTimer?.activityMode ?? 'normal'
+        const intervalMinutes =
+          calculateReapplyInterval(
+            uv,
+            preferences.skinType,
+            preferences.spf,
+            activityMode,
+          ) ?? 60
+
+        const timer: ActiveTimer = {
+          appliedAt: appliedAt.toISOString(),
+          intervalMinutes,
+          activityMode,
+          uvAtApplication: activeTimer?.uvAtApplication ?? uv,
+          nextReapplyAt: appliedAt.toISOString(),
+          snoozedUntil: null,
+        }
+        setActiveTimer(timer)
+        setLocalTimer(timer)
+      }
+    : undefined
 
   const logout = useCallback(async () => {
     try {
@@ -268,11 +311,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       liveNextReapplyAt,
       forecastTimezone,
       forecastTimezoneAbbreviation,
+      reapplyAlarmActive,
       logs,
       applySunscreen,
+      snoozeReapplyAlarm,
       deleteApplicationLog,
       dismissTimer,
       logout,
+      devTriggerReapplyAlarm,
     }),
     [
       preferences,
@@ -299,8 +345,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       liveNextReapplyAt,
       forecastTimezone,
       forecastTimezoneAbbreviation,
+      reapplyAlarmActive,
       logs,
       applySunscreen,
+      snoozeReapplyAlarm,
       deleteApplicationLog,
       dismissTimer,
       logout,

@@ -27,6 +27,7 @@ export function TimerPage() {
     applySunscreen,
     dismissTimer,
     deleteApplicationLog,
+    devTriggerReapplyAlarm,
     logs,
   } = useAppContext()
   const [activityMode, setActivityMode] = useState<ActivityMode>('normal')
@@ -154,6 +155,14 @@ export function TimerPage() {
               />
             ))}
           </div>
+        </section>
+      )}
+
+      {import.meta.env.DEV && devTriggerReapplyAlarm && (
+        <section className="section">
+          <Button variant="ghost" fullWidth onClick={devTriggerReapplyAlarm}>
+            [Dev] Preview reapply alarm
+          </Button>
         </section>
       )}
     </div>

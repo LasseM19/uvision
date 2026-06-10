@@ -33,7 +33,9 @@ export function loadState(): StoredState {
     lastDepartureAlertDate: raw.lastDepartureAlertDate ?? null,
     locationPermissionDenied: raw.locationPermissionDenied ?? false,
     applicationLogs: raw.applicationLogs ?? [],
-    activeTimer: raw.activeTimer ?? null,
+    activeTimer: raw.activeTimer
+      ? { ...raw.activeTimer, snoozedUntil: raw.activeTimer.snoozedUntil ?? null }
+      : null,
   }
 }
 

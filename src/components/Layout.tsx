@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
 import { LocationServices } from './LocationServices'
+import { ReapplyAlarmOverlay } from './ReapplyAlarmOverlay'
 import { usePushSync } from '../hooks/usePushSync'
 
 function LayoutContent() {
@@ -13,6 +14,7 @@ function LayoutContent() {
         <Outlet />
       </main>
       <BottomNav />
+      <ReapplyAlarmOverlay />
     </>
   )
 }

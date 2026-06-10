@@ -91,3 +91,20 @@ export function computeLiveTimerState(
     currentUv,
   }
 }
+
+export const REAPPLY_SNOOZE_MINUTES = 5
+
+export function snoozeUntilIso(fromMs = Date.now()): string {
+  return new Date(fromMs + REAPPLY_SNOOZE_MINUTES * 60_000).toISOString()
+}
+
+export function isReapplyAlarmActive(
+  activeTimer: ActiveTimer | null,
+  phase: TimerPhase,
+  nowMs = Date.now(),
+): boolean {
+  if (!activeTimer) return false
+  if (phase !== 'reapply-now' && phase !== 'overdue') return false
+  if (!activeTimer.snoozedUntil) return true
+  return nowMs >= new Date(activeTimer.snoozedUntil).getTime()
+}

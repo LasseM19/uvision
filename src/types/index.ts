@@ -91,6 +91,7 @@ export interface ActiveTimer {
   activityMode: ActivityMode
   uvAtApplication: number
   nextReapplyAt: string
+  snoozedUntil: string | null
 }
 
 export interface StoredState {
