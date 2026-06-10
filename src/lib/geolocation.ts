@@ -147,7 +147,7 @@ export function geolocationErrorMessage(error: unknown): string {
   if (typeof GeolocationPositionError !== 'undefined' && error instanceof GeolocationPositionError) {
     switch (error.code) {
       case error.PERMISSION_DENIED:
-        return 'Location access is blocked for this website. Follow the steps below, then tap Try again.'
+        return 'Location access is blocked for this website. Follow the steps below, then use "Use my current location".'
       case error.POSITION_UNAVAILABLE:
         return 'Your device could not determine a location. Check that Location Services is on, or search for your city below.'
       case error.TIMEOUT:
