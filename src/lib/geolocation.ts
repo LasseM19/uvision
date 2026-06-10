@@ -106,16 +106,20 @@ export function getLocationSettingsGuide(): LocationSettingsGuide {
   }
 }
 
-/** Opens the iOS Settings app (works for PWA; Safari users still need Website Settings). */
+/** Opens device settings where it helps. Safari browser users must use Website Settings in-page. */
 export function openLocationSettings(): void {
-  if (isIosDevice()) {
-    window.location.assign('app-settings:')
+  if (isIosDevice() && isStandalonePwa()) {
+    window.location.href = 'app-settings:'
     return
   }
 
   if (isAndroidDevice()) {
-    window.location.assign('intent://settings/#Intent;scheme=android-app;end')
+    window.location.href = 'intent://settings/#Intent;scheme=android-app;end'
   }
+}
+
+export function canOpenSystemLocationSettings(): boolean {
+  return (isIosDevice() && isStandalonePwa()) || isAndroidDevice()
 }
 
 export function isPermissionDeniedError(error: unknown): boolean {
@@ -167,45 +171,19 @@ interface PositionOptions {
   maximumAge: number
 }
 
+function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
+  if (typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal) {
+    return fetch(url, { signal: AbortSignal.timeout(timeoutMs) })
+  }
+
+  const controller = new AbortController()
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs)
+  return fetch(url, { signal: controller.signal }).finally(() => window.clearTimeout(timer))
+}
+
 function getPosition(options: PositionOptions): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(resolve, reject, options)
-  })
-}
-
-/** watchPosition is more reliable on iOS Safari than a single getCurrentPosition call. */
-function getPositionViaWatch(options: PositionOptions): Promise<GeolocationPosition> {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error('Geolocation is not supported on this device.'))
-      return
-    }
-
-    let settled = false
-    const finish = (fn: () => void) => {
-      if (settled) return
-      settled = true
-      fn()
-    }
-
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        navigator.geolocation.clearWatch(watchId)
-        finish(() => resolve(position))
-      },
-      (error) => {
-        navigator.geolocation.clearWatch(watchId)
-        finish(() => reject(error))
-      },
-      options,
-    )
-
-    window.setTimeout(() => {
-      navigator.geolocation.clearWatch(watchId)
-      finish(() =>
-        reject(Object.assign(new Error('Location request timed out.'), { code: 3 })),
-      )
-    }, options.timeout + 500)
   })
 }
 
@@ -218,28 +196,15 @@ export async function getCurrentPositionWithRetry(): Promise<GeolocationPosition
     throw new Error(insecureContextMessage())
   }
 
-  if (isIosDevice()) {
-    const iosAttempts: PositionOptions[] = [
-      { enableHighAccuracy: true, timeout: 20_000, maximumAge: 0 },
-      { enableHighAccuracy: false, timeout: 15_000, maximumAge: 60_000 },
-    ]
-
-    let lastError: unknown
-    for (const options of iosAttempts) {
-      try {
-        return await getPositionViaWatch(options)
-      } catch (err) {
-        lastError = err
-        if (isPermissionDeniedError(err)) throw err
-      }
-    }
-    throw lastError ?? new Error('Could not get your location.')
-  }
-
-  const attempts: PositionOptions[] = [
-    { enableHighAccuracy: false, timeout: 12_000, maximumAge: 300_000 },
-    { enableHighAccuracy: true, timeout: 20_000, maximumAge: 0 },
-  ]
+  const attempts: PositionOptions[] = isIosDevice()
+    ? [
+        { enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 },
+        { enableHighAccuracy: false, timeout: 8_000, maximumAge: 120_000 },
+      ]
+    : [
+        { enableHighAccuracy: false, timeout: 10_000, maximumAge: 300_000 },
+        { enableHighAccuracy: true, timeout: 12_000, maximumAge: 0 },
+      ]
 
   let lastError: unknown
   for (const options of attempts) {
@@ -263,9 +228,9 @@ export async function reverseGeocodeLabel(latitude: number, longitude: number): 
       longitude: String(longitude),
       localityLanguage: 'en',
     })
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `https://api.bigdatacloud.net/data/reverse-geocode-client?${params}`,
-      { signal: AbortSignal.timeout(8000) },
+      6000,
     )
     if (!response.ok) return fallback
 

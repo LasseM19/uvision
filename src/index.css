@@ -635,3 +635,20 @@ input {
 .onboarding-page {
   padding-bottom: 2rem;
 }
+
+.error-boundary {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  padding: var(--page-inset-x);
+  background: var(--color-white);
+  color: var(--color-text);
+  text-align: center;
+}
+
+.error-boundary h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}

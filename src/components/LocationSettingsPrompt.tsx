@@ -1,6 +1,10 @@
 import { Button } from './Button'
 import { Card } from './Card'
-import { getLocationSettingsGuide, openLocationSettings } from '../lib/geolocation'
+import {
+  canOpenSystemLocationSettings,
+  getLocationSettingsGuide,
+  openLocationSettings,
+} from '../lib/geolocation'
 
 interface LocationSettingsPromptProps {
   visible: boolean
@@ -16,13 +20,15 @@ export function LocationSettingsPrompt({
   if (!visible) return null
 
   const guide = getLocationSettingsGuide()
+  const showSystemSettings = canOpenSystemLocationSettings()
 
   return (
     <Card className="location-settings-prompt">
       <p className="location-settings-prompt__title">{guide.title}</p>
       <p className="hint-text">
-        UVision needs your location for UV forecasts. Safari often blocks this until you allow it
-        for this specific website.
+        {guide.platform === 'ios-safari'
+          ? 'Allow location for this website inside Safari — not only in iPhone Settings.'
+          : 'UVision needs your location for UV forecasts.'}
       </p>
       <ol className="location-settings-steps">
         {guide.steps.map((step) => (
@@ -30,10 +36,12 @@ export function LocationSettingsPrompt({
         ))}
       </ol>
       <div className="location-settings-actions">
-        <Button fullWidth onClick={openLocationSettings}>
-          {guide.primaryActionLabel}
-        </Button>
-        <Button variant="secondary" fullWidth onClick={onTryAgain} disabled={trying}>
+        {showSystemSettings && (
+          <Button fullWidth onClick={openLocationSettings}>
+            {guide.primaryActionLabel}
+          </Button>
+        )}
+        <Button variant={showSystemSettings ? 'secondary' : 'primary'} fullWidth onClick={onTryAgain} disabled={trying}>
           {trying ? 'Finding you…' : guide.secondaryActionLabel}
         </Button>
       </div>

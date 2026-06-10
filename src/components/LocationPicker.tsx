@@ -24,26 +24,28 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
   const [gpsLoading, setGpsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [locationBlocked, setLocationBlocked] = useState(false)
-  const awaitingRetryRef = useRef(false)
+  const gpsInFlightRef = useRef(false)
   const secureContext = isSecureContextForGeolocation()
 
   const useGps = useCallback(async () => {
+    if (gpsInFlightRef.current) return
+    gpsInFlightRef.current = true
     setGpsLoading(true)
     setError(null)
+
     try {
       const location = await resolveCurrentLocation()
       setLocationBlocked(false)
-      awaitingRetryRef.current = false
       onSelect(location)
     } catch (err) {
       if (isPermissionDeniedError(err)) {
         setLocationBlocked(true)
-        awaitingRetryRef.current = true
         setError('Location is blocked for this website. Follow the Safari steps below, then tap Try again.')
       } else {
         setError(geolocationErrorMessage(err))
       }
     } finally {
+      gpsInFlightRef.current = false
       setGpsLoading(false)
     }
   }, [onSelect])
@@ -53,20 +55,6 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
       setError(insecureContextMessage())
     }
   }, [secureContext])
-
-  useEffect(() => {
-    const retryAfterSettings = () => {
-      if (document.visibilityState !== 'visible' || !awaitingRetryRef.current) return
-      void useGps()
-    }
-
-    document.addEventListener('visibilitychange', retryAfterSettings)
-    window.addEventListener('focus', retryAfterSettings)
-    return () => {
-      document.removeEventListener('visibilitychange', retryAfterSettings)
-      window.removeEventListener('focus', retryAfterSettings)
-    }
-  }, [useGps])
 
   useEffect(() => {
     if (query.length < 2) {

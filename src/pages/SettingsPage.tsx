@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { useAppContext } from '../context/AppContext'
+import { clearAppCacheAndReload } from '../lib/clearCache'
 import { getSkinTypeLabel, getSpfLabel } from '../lib/storage'
 
 export function HistoryPage() {
@@ -154,6 +155,18 @@ export function SettingsPage() {
           Redo setup
         </Button>
       </Link>
+
+      <section className="section">
+        <h2 className="section-title">Troubleshooting</h2>
+        <Card>
+          <p className="hint-text">
+            Blank screen on your phone? Clear cached app data and reload the latest version.
+          </p>
+          <Button variant="secondary" fullWidth onClick={() => void clearAppCacheAndReload()}>
+            Clear cache and reload
+          </Button>
+        </Card>
+      </section>
     </div>
   )
 }
