@@ -70,6 +70,8 @@ export interface ForecastData {
   daily: DailyForecast[]
   recommendation: DailyRecommendation
   recommendationText: string
+  timezone: string
+  timezoneAbbreviation: string
 }
 
 export interface ApplicationLog {

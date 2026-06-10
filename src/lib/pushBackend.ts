@@ -38,6 +38,7 @@ export interface PushRegistrationInput {
   location: Location | null
   preferences: UserPreferences
   homeLocation: HomeLocation | null
+  timezone: string | null
 }
 
 export async function subscribeToBackendPush(
@@ -76,7 +77,9 @@ export async function subscribeToBackendPush(
       longitude: input.location?.longitude ?? null,
       morningCheckTime: input.preferences.morningCheckTime,
       leaveHomeAlertsEnabled: input.preferences.leaveHomeAlertsEnabled,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timezone:
+        input.timezone ??
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
       home: input.homeLocation
         ? {
             latitude: input.homeLocation.latitude,
@@ -105,7 +108,9 @@ export async function syncPushPreferences(input: PushRegistrationInput): Promise
       longitude: input.location?.longitude ?? null,
       morningCheckTime: input.preferences.morningCheckTime,
       leaveHomeAlertsEnabled: input.preferences.leaveHomeAlertsEnabled,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timezone:
+        input.timezone ??
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
       home: input.homeLocation
         ? {
             latitude: input.homeLocation.latitude,

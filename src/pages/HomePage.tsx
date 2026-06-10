@@ -2,11 +2,14 @@ import { Link } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { LocationBar } from '../components/LocationBar'
+import { PageBrandHeader } from '../components/PageBrandHeader'
+import { HourlyUvChart } from '../components/HourlyUvChart'
 import { WeatherIconDisplay } from '../components/WeatherIcon'
 import { useAppContext } from '../context/AppContext'
 import { useForecast } from '../hooks/useForecast'
+import { formatDateInZone, formatTimeInZone } from '../lib/timezone'
 import { timerPhaseLabel } from '../lib/sunscreenTimer'
-import { formatDate, formatDuration, formatTime, uvRiskColor, uvRiskLabel } from '../lib/uvLogic'
+import { formatDuration, uvRiskColor, uvRiskLabel } from '../lib/uvLogic'
 
 const recommendationStyles = {
   'take-sunscreen': { badge: 'Take sunscreen today', className: 'rec--take' },
@@ -28,12 +31,7 @@ export function HomePage() {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">UVision</p>
-          <h1 className="page-title">Today</h1>
-        </div>
-      </header>
+      <PageBrandHeader title="Today" />
 
       <LocationBar />
 
@@ -73,7 +71,9 @@ export function HomePage() {
               <span style={{ color: uvRiskColor(today.maxEffectiveUv) }}>
                 {uvRiskLabel(today.maxEffectiveUv)} risk
               </span>
-              {today.peakHour && <span>Peak ~{formatTime(today.peakHour)}</span>}
+              {today.peakHour && (
+                <span>Peak ~{formatTimeInZone(today.peakHour, forecast.timezone)}</span>
+              )}
             </div>
           </Card>
 
@@ -94,19 +94,11 @@ export function HomePage() {
           <section className="section">
             <div className="section-header">
               <h2 className="section-title">Today hourly</h2>
+              <span className="timezone-badge">{forecast.timezoneAbbreviation}</span>
             </div>
-            <div className="hourly-scroll">
-              {forecast.hourlyToday.map((hour) => (
-                <div key={hour.time.toISOString()} className="hourly-item">
-                  <span className="hourly-time">{formatTime(hour.time)}</span>
-                  <WeatherIconDisplay icon={hour.weatherIcon} size="sm" />
-                  <span className="hourly-uv" style={{ color: uvRiskColor(hour.effectiveUv) }}>
-                    {hour.effectiveUv}
-                  </span>
-                  <span className="hourly-cloud">{hour.cloudCover}%</span>
-                </div>
-              ))}
-            </div>
+            <Card className="hourly-chart-card">
+              <HourlyUvChart hours={forecast.hourlyToday} timeZone={forecast.timezone} />
+            </Card>
           </section>
 
           <section className="section">
@@ -116,7 +108,9 @@ export function HomePage() {
                 <Card key={day.date.toISOString()} className="daily-card">
                   <div className="daily-card-main">
                     <div>
-                      <p className="daily-date">{index === 0 ? 'Today' : formatDate(day.date)}</p>
+                      <p className="daily-date">
+                        {index === 0 ? 'Today' : formatDateInZone(day.date, forecast.timezone)}
+                      </p>
                       <p className="daily-sub">
                         Clouds ~{Math.round(day.avgCloudCover)}% · Rain {day.maxPrecipitationProbability}%
                       </p>

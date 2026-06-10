@@ -3,6 +3,15 @@ import { Layout } from './components/Layout'
 import { StandaloneShell } from './components/StandaloneShell'
 import { AppProvider, useAppContext } from './context/AppContext'
 import { AccountPage } from './pages/AccountPage'
+import {
+  AccountHomePage,
+  AccountLanguagePage,
+  AccountLocationPage,
+  AccountNotificationsPage,
+  AccountProfilePage,
+  AccountSkinPage,
+  AccountTroubleshootingPage,
+} from './pages/account/AccountSubpages'
 import { HomePage } from './pages/HomePage'
 import { LearnPage } from './pages/LearnPage'
 import { HistoryPage, OnboardingPage } from './pages/SettingsPage'
@@ -34,6 +43,13 @@ function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/timer" element={<TimerPage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/account/profile" element={<AccountProfilePage />} />
+        <Route path="/account/location" element={<AccountLocationPage />} />
+        <Route path="/account/skin" element={<AccountSkinPage />} />
+        <Route path="/account/language" element={<AccountLanguagePage />} />
+        <Route path="/account/home" element={<AccountHomePage />} />
+        <Route path="/account/notifications" element={<AccountNotificationsPage />} />
+        <Route path="/account/troubleshooting" element={<AccountTroubleshootingPage />} />
         <Route path="/account/learn" element={<LearnPage />} />
         <Route path="/account/history" element={<HistoryPage />} />
         <Route path="/tracker" element={<Navigate to="/timer" replace />} />

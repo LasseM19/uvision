@@ -1,16 +1,11 @@
-import { Link } from 'react-router-dom'
 import { Card } from '../components/Card'
+import { AccountSubpageHeader } from '../components/AccountSubpageHeader'
 import { educationArticles } from '../data/education'
 
 export function LearnPage() {
   return (
     <div className="page">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">Account</p>
-          <h1 className="page-title">Learn about UV</h1>
-        </div>
-      </header>
+      <AccountSubpageHeader title="Learn about UV" />
 
       <div className="article-list">
         {educationArticles.map((article) => (
@@ -20,10 +15,6 @@ export function LearnPage() {
           </Card>
         ))}
       </div>
-
-      <Link to="/account" className="text-link">
-        ← Back to account
-      </Link>
     </div>
   )
 }

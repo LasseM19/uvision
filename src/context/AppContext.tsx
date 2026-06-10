@@ -23,6 +23,7 @@ import type { DepartureAlertCopy } from '../lib/notifications'
 import {
   addApplicationLog,
   clearActiveTimer,
+  clearAllUserData,
   clearHomeLocation as clearStoredHome,
   loadState,
   saveHomeLocation,
@@ -31,6 +32,7 @@ import {
   setLocationPermissionDenied,
   updatePreferences,
 } from '../lib/storage'
+import { unsubscribeFromBackendPush } from '../lib/pushBackend'
 import {
   buildTimerSchedule,
   calculateReapplyInterval,
@@ -70,6 +72,7 @@ interface AppContextValue {
   logs: ApplicationLog[]
   applySunscreen: (input: ApplySunscreenInput) => void
   dismissTimer: () => void
+  logout: () => Promise<void>
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -193,6 +196,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLocalTimer(null)
   }, [])
 
+  const logout = useCallback(async () => {
+    try {
+      await unsubscribeFromBackendPush()
+    } catch {
+      /* ignore */
+    }
+    clearAllUserData()
+    setPrefsState({ ...DEFAULT_PREFERENCES, onboardingComplete: false })
+    setLocState(null)
+    setHomeState(null)
+    setLivePositionState(null)
+    setLiveTrackingEnabledState(false)
+    setLocationPermissionDeniedState(false)
+    setDepartureBannerState(null)
+    setLocalTimer(null)
+    setLogs([])
+  }, [])
+
   const value = useMemo(
     () => ({
       preferences,
@@ -217,6 +238,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       logs,
       applySunscreen,
       dismissTimer,
+      logout,
     }),
     [
       preferences,
@@ -241,6 +263,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       logs,
       applySunscreen,
       dismissTimer,
+      logout,
     ],
   )
 

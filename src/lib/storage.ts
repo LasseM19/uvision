@@ -115,6 +115,11 @@ export function clearActiveTimer(): void {
   saveState({ activeTimer: null })
 }
 
+export function clearAllUserData(): void {
+  localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem('uvision-push-endpoint')
+}
+
 export function getSkinTypeLabel(type: SkinType): string {
   const labels: Record<SkinType, string> = {
     1: 'Very fair — burns easily',

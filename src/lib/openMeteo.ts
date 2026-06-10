@@ -1,4 +1,5 @@
 import type { DailyForecast, ForecastData, HourlyForecast, Location } from '../types'
+import { getTodayKeyInZone, parseLocalDateTime } from './timezone'
 import {
   effectiveUv,
   recommendationFromForecast,
@@ -22,17 +23,18 @@ interface OpenMeteoDaily {
 interface OpenMeteoResponse {
   hourly: OpenMeteoHourly
   daily: OpenMeteoDaily
+  timezone: string
+  timezone_abbreviation: string
 }
 
-function parseHourly(hourly: OpenMeteoHourly, dayStart: Date, dayEnd: Date): HourlyForecast[] {
+function parseHourly(hourly: OpenMeteoHourly, timeZone: string, todayKey: string): HourlyForecast[] {
   return hourly.time
     .map((time, i) => {
-      const date = new Date(time)
       const uvIndex = hourly.uv_index[i] ?? 0
       const cloudCover = hourly.cloud_cover[i] ?? 0
       const precipitationProbability = hourly.precipitation_probability[i] ?? 0
       return {
-        time: date,
+        time: parseLocalDateTime(time, timeZone),
         uvIndex,
         effectiveUv: effectiveUv(uvIndex, cloudCover),
         cloudCover,
@@ -40,16 +42,16 @@ function parseHourly(hourly: OpenMeteoHourly, dayStart: Date, dayEnd: Date): Hou
         weatherIcon: weatherIconFromConditions(cloudCover, precipitationProbability),
       }
     })
-    .filter((h) => h.time >= dayStart && h.time < dayEnd)
+    .filter((_, i) => hourly.time[i].slice(0, 10) === todayKey)
 }
 
-function parseDaily(daily: OpenMeteoDaily): DailyForecast[] {
+function parseDaily(daily: OpenMeteoDaily, timeZone: string): DailyForecast[] {
   return daily.time.map((time, i) => {
     const maxUv = daily.uv_index_max[i] ?? 0
     const avgCloudCover = daily.cloud_cover_mean[i] ?? 0
     const maxPrecipitationProbability = daily.precipitation_probability_max[i] ?? 0
     return {
-      date: new Date(time),
+      date: parseLocalDateTime(`${time}T12:00`, timeZone),
       maxUv,
       maxEffectiveUv: effectiveUv(maxUv, avgCloudCover),
       avgCloudCover,
@@ -88,15 +90,12 @@ export async function fetchForecast(location: Location): Promise<ForecastData> {
   if (!response.ok) throw new Error('Could not load UV forecast. Please try again.')
 
   const data = (await response.json()) as OpenMeteoResponse
+  const timeZone = data.timezone || 'UTC'
+  const timezoneAbbreviation = data.timezone_abbreviation || timeZone
+  const todayKey = getTodayKeyInZone(timeZone)
 
-  const now = new Date()
-  const dayStart = new Date(now)
-  dayStart.setHours(0, 0, 0, 0)
-  const dayEnd = new Date(dayStart)
-  dayEnd.setDate(dayEnd.getDate() + 1)
-
-  const hourlyToday = parseHourly(data.hourly, dayStart, dayEnd)
-  let daily = parseDaily(data.daily)
+  const hourlyToday = parseHourly(data.hourly, timeZone, todayKey)
+  let daily = parseDaily(data.daily, timeZone)
   daily = attachPeakHours(hourlyToday, daily)
 
   const today = daily[0]
@@ -110,6 +109,8 @@ export async function fetchForecast(location: Location): Promise<ForecastData> {
     daily,
     recommendation,
     recommendationText: text,
+    timezone: timeZone,
+    timezoneAbbreviation,
   }
 }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
+import { PageBrandHeader } from '../components/PageBrandHeader'
 import { useAppContext } from '../context/AppContext'
 import { useForecast } from '../hooks/useForecast'
 import { getActivityLabel } from '../lib/storage'
@@ -49,12 +50,7 @@ export function TimerPage() {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">Timer</p>
-          <h1 className="page-title">Sunscreen</h1>
-        </div>
-      </header>
+      <PageBrandHeader eyebrow="Timer" title="Sunscreen" />
 
       {!location && (
         <Card className="banner-card">

@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
+import { AccountSubpageHeader } from '../components/AccountSubpageHeader'
+import { Logo } from '../components/Logo'
 import { useAppContext } from '../context/AppContext'
 import { getSkinTypeLabel, getSpfLabel } from '../lib/storage'
 
@@ -20,12 +22,7 @@ export function HistoryPage() {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">Account</p>
-          <h1 className="page-title">Your protection</h1>
-        </div>
-      </header>
+      <AccountSubpageHeader title="Your protection" />
 
       <Card className="stats-card">
         <p className="stats-value">{stats.daysWithApplication}</p>
@@ -63,9 +60,6 @@ export function HistoryPage() {
         </div>
       )}
 
-      <Link to="/account" className="text-link">
-        ← Back to account
-      </Link>
     </div>
   )
 }
@@ -83,7 +77,10 @@ export function OnboardingPage() {
 
   return (
     <div className="page onboarding-page">
-      <header className="page-header">
+      <div className="onboarding-brand">
+        <Logo size="lg" />
+      </div>
+      <header className="page-header onboarding-header">
         <div>
           <p className="eyebrow">Welcome</p>
           <h1 className="page-title">Let&apos;s personalize UVision</h1>
