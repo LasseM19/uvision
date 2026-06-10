@@ -31,16 +31,15 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
     if (gpsInFlightRef.current) return
     gpsInFlightRef.current = true
     setGpsLoading(true)
+    setLocationBlocked(false)
     setError(null)
 
     try {
       const location = await resolveCurrentLocation()
-      setLocationBlocked(false)
       onSelect(location)
     } catch (err) {
       if (isPermissionDeniedError(err)) {
         setLocationBlocked(true)
-        setError('Location is blocked for this website. Follow the Safari steps below, then tap Try again.')
       } else {
         setError(geolocationErrorMessage(err))
       }
@@ -96,11 +95,7 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
       </div>
       <p className="hint-text">We use your location for UV forecasts only — never shared.</p>
 
-      <LocationSettingsPrompt
-        visible={locationBlocked}
-        onTryAgain={() => void useGps()}
-        trying={gpsLoading}
-      />
+      <LocationSettingsPrompt visible={locationBlocked} />
 
       {!secureContext && <p className="warning-text">{insecureContextMessage()}</p>}
 
@@ -119,7 +114,7 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
         autoComplete="off"
       />
       {loading && <p className="hint-text">Searching…</p>}
-      {error && <p className="error-text">{error}</p>}
+      {error && !locationBlocked && <p className="error-text">{error}</p>}
       {results.length > 0 && (
         <ul className="city-results">
           {results.map((city) => (

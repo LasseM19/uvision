@@ -1,11 +1,42 @@
 {
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/reset.html",
+      "headers": [
+        {
+          "key": "Clear-Site-Data",
+          "value": "\"cache\", \"executionContexts\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/safari-fix.html",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache"
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
     },
@@ -17,11 +48,37 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Clear-Site-Data",
+          "value": "\"cache\", \"executionContexts\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/registerSW.js",
+      "headers": [
+        {
+          "key": "Clear-Site-Data",
+          "value": "\"cache\", \"executionContexts\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
     }
   ],
   "rewrites": [
     {
-      "source": "/((?!assets/|favicon\\.svg|pwa-192\\.png|pwa-512\\.png|manifest\\.webmanifest|reset\\.html|sw\\.js|workbox-.*|registerSW\\.js).*)",
+      "source": "/((?!assets/|favicon\\.svg|pwa-192\\.png|pwa-512\\.png|manifest\\.webmanifest|reset\\.html|safari-fix\\.html|sw\\.js|workbox-|registerSW\\.js).*)",
       "destination": "/index.html"
     }
   ]

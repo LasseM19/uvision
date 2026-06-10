@@ -22,7 +22,6 @@
 
       .boot-screen {
         min-height: 100vh;
-        min-height: 100dvh;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -44,31 +43,23 @@
     </style>
     <script>
       ;(function () {
-        if (!window.crypto) window.crypto = {}
-        if (!window.crypto.randomUUID) {
-          window.crypto.randomUUID = function () {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-              var r = (Math.random() * 16) | 0
-              var v = c === 'x' ? r : (r & 0x3) | 0x8
-              return v.toString(16)
+        try {
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+              regs.forEach(function (reg) {
+                reg.unregister()
+              })
             })
           }
-        }
-
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function (regs) {
-            regs.forEach(function (reg) {
-              reg.unregister()
+          if ('caches' in window) {
+            caches.keys().then(function (keys) {
+              keys.forEach(function (key) {
+                caches.delete(key)
+              })
             })
-          })
-        }
-
-        if ('caches' in window) {
-          caches.keys().then(function (keys) {
-            keys.forEach(function (key) {
-              caches.delete(key)
-            })
-          })
+          }
+        } catch (e) {
+          /* ignore */
         }
       })()
     </script>
@@ -78,24 +69,15 @@
       <div class="boot-screen" id="boot-fallback">
         <strong>UVision</strong>
         <p id="boot-status">Loading…</p>
-        <p>
-          <a href="/reset.html">Stuck? Reset the app</a>
-        </p>
+        <p><a href="/safari-fix.html">Safari blank? Fix here</a></p>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      window.setTimeout(function () {
-        var status = document.getElementById('boot-status')
-        if (status && status.textContent === 'Loading…') {
-          status.textContent = 'Still loading… try Reset the app below, or reload the page.'
-        }
-      }, 8000)
-    </script>
     <noscript>
       <div class="boot-screen">
         <strong>UVision</strong>
-        <p>JavaScript is required. Please enable it in your browser settings.</p>
+        <p>JavaScript is required.</p>
+        <p><a href="/safari-fix.html">Safari fix</a></p>
       </div>
     </noscript>
   </body>

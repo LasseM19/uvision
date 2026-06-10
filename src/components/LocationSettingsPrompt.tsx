@@ -1,22 +1,12 @@
 import { Button } from './Button'
 import { Card } from './Card'
-import {
-  canOpenSystemLocationSettings,
-  getLocationSettingsGuide,
-  openLocationSettings,
-} from '../lib/geolocation'
+import { canOpenSystemLocationSettings, getLocationSettingsGuide, openLocationSettings } from '../lib/geolocation'
 
 interface LocationSettingsPromptProps {
   visible: boolean
-  onTryAgain: () => void
-  trying?: boolean
 }
 
-export function LocationSettingsPrompt({
-  visible,
-  onTryAgain,
-  trying = false,
-}: LocationSettingsPromptProps) {
+export function LocationSettingsPrompt({ visible }: LocationSettingsPromptProps) {
   if (!visible) return null
 
   const guide = getLocationSettingsGuide()
@@ -35,16 +25,13 @@ export function LocationSettingsPrompt({
           <li key={step}>{step}</li>
         ))}
       </ol>
-      <div className="location-settings-actions">
-        {showSystemSettings && (
+      {showSystemSettings && (
+        <div className="location-settings-actions">
           <Button fullWidth onClick={openLocationSettings}>
             {guide.primaryActionLabel}
           </Button>
-        )}
-        <Button variant={showSystemSettings ? 'secondary' : 'primary'} fullWidth onClick={onTryAgain} disabled={trying}>
-          {trying ? 'Finding you…' : guide.secondaryActionLabel}
-        </Button>
-      </div>
+        </div>
+      )}
     </Card>
   )
 }

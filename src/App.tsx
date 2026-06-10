@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Layout } from './components/Layout'
+import { StandaloneShell } from './components/StandaloneShell'
 import { AppProvider, useAppContext } from './context/AppContext'
 import { ForecastPage } from './pages/ForecastPage'
 import { HomePage } from './pages/HomePage'
@@ -20,7 +21,13 @@ function AppRoutes() {
       <Route
         path="/onboarding"
         element={
-          preferences.onboardingComplete ? <Navigate to="/" replace /> : <OnboardingPage />
+          preferences.onboardingComplete ? (
+            <Navigate to="/" replace />
+          ) : (
+            <StandaloneShell>
+              <OnboardingPage />
+            </StandaloneShell>
+          )
         }
       />
       <Route element={<Layout />}>

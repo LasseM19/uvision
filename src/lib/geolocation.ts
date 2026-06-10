@@ -53,12 +53,12 @@ export function getLocationSettingsGuide(): LocationSettingsGuide {
       platform: 'ios-pwa',
       title: 'Allow location for UVision',
       primaryActionLabel: 'Open iPhone Settings',
-      secondaryActionLabel: 'Try again',
+      secondaryActionLabel: 'Use my current location',
       steps: [
         'Tap "Open iPhone Settings" below',
         'Scroll to UVision in the app list',
         'Tap Location → choose "While Using the App"',
-        'Return to UVision and tap "Try again"',
+        'Return to UVision and tap "Use my current location"',
       ],
     }
   }
@@ -68,13 +68,12 @@ export function getLocationSettingsGuide(): LocationSettingsGuide {
       platform: 'ios-safari',
       title: 'Allow location in Safari',
       primaryActionLabel: 'Open iPhone Settings',
-      secondaryActionLabel: 'Try again',
+      secondaryActionLabel: 'Use my current location',
       steps: [
         'In Safari, tap the icon to the left of the address bar (Aa or sliders icon)',
         'Tap "Website Settings" (or "Settings for This Website")',
         'Tap Location → choose "Allow" (not "Deny" or "Ask")',
-        'Also check: iPhone Settings → Apps → Safari → Location → "Ask" or "Allow"',
-        'Return to this page and tap "Try again"',
+        'Return to this page and tap "Use my current location" below',
       ],
     }
   }
@@ -84,11 +83,11 @@ export function getLocationSettingsGuide(): LocationSettingsGuide {
       platform: 'android',
       title: 'Allow location for this website',
       primaryActionLabel: 'Open phone settings',
-      secondaryActionLabel: 'Try again',
+      secondaryActionLabel: 'Use my current location',
       steps: [
         'Tap the lock icon next to the website address',
         'Open Permissions → Location → Allow',
-        'Return to UVision and tap "Try again"',
+        'Return to UVision and tap "Use my current location"',
       ],
     }
   }
@@ -97,11 +96,11 @@ export function getLocationSettingsGuide(): LocationSettingsGuide {
     platform: 'other',
     title: 'Allow location for this website',
     primaryActionLabel: 'Open browser settings',
-    secondaryActionLabel: 'Try again',
+    secondaryActionLabel: 'Use my current location',
     steps: [
       'Open your browser settings for this site',
       'Find Location permissions and set to Allow',
-      'Return here and tap "Try again"',
+      'Return here and tap "Use my current location"',
     ],
   }
 }

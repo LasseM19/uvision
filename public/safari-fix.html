@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UVision — Safari fix</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        padding: 1.5rem;
+        background: #ffffff;
+        color: #1a1a1a;
+        line-height: 1.5;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        margin: 0 0 0.5rem;
+      }
+
+      .box {
+        border: 1px solid #f0f0f0;
+        border-radius: 16px;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+
+      ol {
+        padding-left: 1.25rem;
+      }
+
+      a.button {
+        display: block;
+        margin-top: 1rem;
+        padding: 0.875rem 1rem;
+        border-radius: 12px;
+        background: #ff6b35;
+        color: #ffffff;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      p.note {
+        color: #6b7280;
+        font-size: 0.9375rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Safari laadt UVision niet?</h1>
+    <p class="note">
+      Chrome werkt wel op je iPhone? Dan zit het probleem bijna zeker in oude Safari-data of een
+      content blocker — niet in je netwerk.
+    </p>
+
+    <div class="box">
+      <strong>Stap 1 — Automatische reset</strong>
+      <p>Open deze link in <strong>Safari</strong> (niet Chrome):</p>
+      <a class="button" href="/reset.html">Open reset-pagina</a>
+    </div>
+
+    <div class="box">
+      <strong>Stap 2 — Safari website-data wissen (meest effectief)</strong>
+      <ol>
+        <li>iPhone <strong>Instellingen</strong></li>
+        <li><strong>Apps</strong> → <strong>Safari</strong></li>
+        <li><strong>Geavanceerd</strong> → <strong>Websitegegevens</strong></li>
+        <li>Zoek <strong>uvision</strong> of <strong>vercel</strong></li>
+        <li>Tik → <strong>Verwijder</strong></li>
+      </ol>
+    </div>
+
+    <div class="box">
+      <strong>Stap 3 — Content blocker uit</strong>
+      <ol>
+        <li>In Safari, tik links in de adresbalk op <strong>Aa</strong></li>
+        <li>Zet <strong>Content Blockers uit</strong> voor deze site</li>
+        <li>Herlaad de pagina</li>
+      </ol>
+    </div>
+
+    <a class="button" href="/">Open UVision opnieuw</a>
+
+    <p class="note" style="margin-top: 1.5rem">
+      Werkt Safari nog steeds niet? Gebruik UVision tijdelijk in <strong>Chrome op iPhone</strong>
+      — daar werkt hij al bij jou.
+    </p>
+  </body>
+</html>
