@@ -33,10 +33,12 @@ import {
   updatePreferences,
 } from '../lib/storage'
 import { unsubscribeFromBackendPush } from '../lib/pushBackend'
+import { getCurrentEffectiveUv } from '../lib/currentUv'
+import { useForecast } from '../hooks/useForecast'
 import {
   buildTimerSchedule,
   calculateReapplyInterval,
-  getTimerPhase,
+  computeLiveTimerState,
   type TimerPhase,
 } from '../lib/sunscreenTimer'
 import { generateId } from '../lib/id'
@@ -69,6 +71,11 @@ interface AppContextValue {
   activeTimer: ActiveTimer | null
   phase: TimerPhase
   minutesLeft: number
+  currentUv: number
+  liveIntervalMinutes: number | null
+  liveNextReapplyAt: Date | null
+  forecastTimezone: string | null
+  forecastTimezoneAbbreviation: string | null
   logs: ApplicationLog[]
   applySunscreen: (input: ApplySunscreenInput) => void
   dismissTimer: () => void
@@ -90,17 +97,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [departureBanner, setDepartureBannerState] = useState<DepartureAlertCopy | null>(null)
   const [activeTimer, setLocalTimer] = useState<ActiveTimer | null>(initial.activeTimer)
   const [logs, setLogs] = useState<ApplicationLog[]>(initial.applicationLogs)
-  const [, setTick] = useState(0)
+  const [tick, setTick] = useState(0)
+  const { forecast } = useForecast(location)
 
   useEffect(() => {
     const id = window.setInterval(() => setTick((t) => t + 1), 1000)
     return () => window.clearInterval(id)
   }, [])
 
-  const phase = activeTimer ? getTimerPhase(activeTimer.nextReapplyAt) : 'idle'
-  const minutesLeft = activeTimer
-    ? Math.max(0, Math.round((new Date(activeTimer.nextReapplyAt).getTime() - Date.now()) / 60_000))
-    : 0
+  const currentUv = useMemo(
+    () =>
+      getCurrentEffectiveUv(forecast?.hourlyToday, forecast?.daily[0]?.maxEffectiveUv ?? 0),
+    [forecast],
+  )
+
+  const liveTimer = useMemo(() => {
+    if (!activeTimer) return null
+    return computeLiveTimerState(activeTimer, currentUv, preferences.skinType, preferences.spf)
+  }, [activeTimer, currentUv, preferences.skinType, preferences.spf, tick])
+
+  const phase = liveTimer?.phase ?? 'idle'
+  const minutesLeft = liveTimer?.minutesLeft ?? 0
+  const liveIntervalMinutes = liveTimer?.intervalMinutes ?? null
+  const liveNextReapplyAt = liveTimer?.nextReapplyAt ?? null
+  const forecastTimezone = forecast?.timezone ?? null
+  const forecastTimezoneAbbreviation = forecast?.timezoneAbbreviation ?? null
 
   const setPreferences = useCallback((prefs: Partial<UserPreferences>) => {
     const next = updatePreferences(prefs)
@@ -235,6 +256,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activeTimer,
       phase,
       minutesLeft,
+      currentUv,
+      liveIntervalMinutes,
+      liveNextReapplyAt,
+      forecastTimezone,
+      forecastTimezoneAbbreviation,
       logs,
       applySunscreen,
       dismissTimer,
@@ -260,6 +286,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       activeTimer,
       phase,
       minutesLeft,
+      currentUv,
+      liveIntervalMinutes,
+      liveNextReapplyAt,
+      forecastTimezone,
+      forecastTimezoneAbbreviation,
       logs,
       applySunscreen,
       dismissTimer,

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
+import { ActiveTimerStatus } from '../components/ActiveTimerStatus'
 import { LocationBar } from '../components/LocationBar'
 import { PageBrandHeader } from '../components/PageBrandHeader'
 import { HourlyUvChart } from '../components/HourlyUvChart'
@@ -8,8 +9,7 @@ import { WeatherIconDisplay } from '../components/WeatherIcon'
 import { useAppContext } from '../context/AppContext'
 import { useForecast } from '../hooks/useForecast'
 import { formatDateInZone, formatTimeInZone } from '../lib/timezone'
-import { timerPhaseLabel } from '../lib/sunscreenTimer'
-import { formatDuration, uvRiskColor, uvRiskLabel } from '../lib/uvLogic'
+import { uvRiskColor, uvRiskLabel } from '../lib/uvLogic'
 
 const recommendationStyles = {
   'take-sunscreen': { badge: 'Take sunscreen today', className: 'rec--take' },
@@ -18,7 +18,16 @@ const recommendationStyles = {
 } as const
 
 export function HomePage() {
-  const { location, preferences, activeTimer, phase, minutesLeft } = useAppContext()
+  const {
+    location,
+    preferences,
+    activeTimer,
+    phase,
+    minutesLeft,
+    liveNextReapplyAt,
+    forecastTimezone,
+    forecastTimezoneAbbreviation,
+  } = useAppContext()
   const { forecast, loading, error, refresh } = useForecast(location)
 
   const today = forecast?.daily[0]
@@ -77,14 +86,16 @@ export function HomePage() {
             </div>
           </Card>
 
-          {activeTimer && (
-            <Card className="timer-card">
-              <p className="timer-phase">{timerPhaseLabel(phase)}</p>
-              <p className="timer-countdown">
-                {phase === 'reapply-now' || phase === 'overdue'
-                  ? 'Time to reapply!'
-                  : `${formatDuration(minutesLeft)} until reapply`}
-              </p>
+          {activeTimer && liveNextReapplyAt && (
+            <Card className="timer-card timer-card--active">
+              <ActiveTimerStatus
+                compact
+                phase={phase}
+                minutesLeft={minutesLeft}
+                nextReapplyAt={liveNextReapplyAt}
+                timeZone={forecastTimezone}
+                timezoneAbbreviation={forecastTimezoneAbbreviation}
+              />
               <Link to="/timer" className="text-link">
                 Open timer →
               </Link>

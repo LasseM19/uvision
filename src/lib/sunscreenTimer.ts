@@ -1,4 +1,7 @@
-import type { ActivityMode, SkinType, SpfLevel } from '../types'
+import type { ActiveTimer, ActivityMode, SkinType, SpfLevel } from '../types'
+
+/** Minutes between applications when UV is low but a timer is already running. */
+const LOW_UV_TIMER_MINUTES = 120
 
 export function baseIntervalMinutes(uv: number): number | null {
   if (uv <= 2) return null
@@ -55,4 +58,36 @@ export function timerPhaseLabel(phase: TimerPhase): string {
     overdue: 'Overdue — reapply!',
   }
   return labels[phase]
+}
+
+export interface LiveTimerState {
+  phase: TimerPhase
+  minutesLeft: number
+  intervalMinutes: number | null
+  nextReapplyAt: Date
+  currentUv: number
+}
+
+/** Live countdown from application time using the current UV level. */
+export function computeLiveTimerState(
+  timer: ActiveTimer,
+  currentUv: number,
+  skinType: SkinType,
+  spf: SpfLevel,
+  nowMs = Date.now(),
+): LiveTimerState {
+  const appliedAt = new Date(timer.appliedAt)
+  const intervalMinutes =
+    calculateReapplyInterval(currentUv, skinType, spf, timer.activityMode) ?? LOW_UV_TIMER_MINUTES
+  const nextReapplyAt = new Date(appliedAt.getTime() + intervalMinutes * 60_000)
+  const minutesLeft = Math.max(0, Math.round((nextReapplyAt.getTime() - nowMs) / 60_000))
+
+  return {
+    phase: getTimerPhase(nextReapplyAt.toISOString()),
+    minutesLeft,
+    intervalMinutes:
+      calculateReapplyInterval(currentUv, skinType, spf, timer.activityMode) ?? null,
+    nextReapplyAt,
+    currentUv,
+  }
 }

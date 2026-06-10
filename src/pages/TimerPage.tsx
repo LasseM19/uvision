@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
+import { ActiveTimerStatus } from '../components/ActiveTimerStatus'
 import { PageBrandHeader } from '../components/PageBrandHeader'
 import { useAppContext } from '../context/AppContext'
-import { useForecast } from '../hooks/useForecast'
 import { getActivityLabel } from '../lib/storage'
-import { calculateReapplyInterval, timerPhaseLabel } from '../lib/sunscreenTimer'
-import { formatDuration, formatTime, uvRiskColor } from '../lib/uvLogic'
+import { calculateReapplyInterval } from '../lib/sunscreenTimer'
+import { formatTime, uvRiskColor, uvRiskLabel } from '../lib/uvLogic'
 import type { ActivityMode } from '../types'
 
 const activityModes: ActivityMode[] = ['normal', 'swimming', 'sports']
@@ -18,17 +18,16 @@ export function TimerPage() {
     activeTimer,
     phase,
     minutesLeft,
+    currentUv,
+    liveIntervalMinutes,
+    liveNextReapplyAt,
+    forecastTimezone,
+    forecastTimezoneAbbreviation,
     applySunscreen,
     dismissTimer,
     logs,
   } = useAppContext()
-  const { forecast } = useForecast(location)
   const [activityMode, setActivityMode] = useState<ActivityMode>('normal')
-
-  const currentUv =
-    forecast?.hourlyToday.find((h) => h.time.getTime() <= Date.now())?.effectiveUv ??
-    forecast?.daily[0]?.maxEffectiveUv ??
-    0
 
   const previewInterval = calculateReapplyInterval(
     currentUv,
@@ -41,7 +40,7 @@ export function TimerPage() {
     if (!location) return
     applySunscreen({
       uv: currentUv,
-      activityMode,
+      activityMode: activeTimer?.activityMode ?? activityMode,
       skinType: preferences.skinType,
       spf: preferences.spf,
       locationLabel: location.label,
@@ -58,22 +57,35 @@ export function TimerPage() {
         </Card>
       )}
 
-      <Card className="tracker-status-card">
-        <p className="timer-phase">{timerPhaseLabel(phase)}</p>
-        {activeTimer ? (
-          <>
-            <p className="timer-countdown timer-countdown--large">
-              {phase === 'reapply-now' || phase === 'overdue'
-                ? 'Reapply now!'
-                : formatDuration(minutesLeft)}
+      <Card
+        className={`tracker-status-card timer-uv-card${activeTimer ? ' timer-uv-card--running' : ''}`}
+      >
+        <div className="timer-uv-live">
+          <div>
+            <p className="timer-uv-live__label">Current effective UV</p>
+            <p className="timer-uv-live__value" style={{ color: uvRiskColor(currentUv) }}>
+              {currentUv}
             </p>
+          </div>
+          <p className="timer-uv-live__risk">{uvRiskLabel(currentUv)}</p>
+        </div>
+
+        {activeTimer && liveNextReapplyAt ? (
+          <ActiveTimerStatus
+            phase={phase}
+            minutesLeft={minutesLeft}
+            nextReapplyAt={liveNextReapplyAt}
+            timeZone={forecastTimezone}
+            timezoneAbbreviation={forecastTimezoneAbbreviation}
+          >
             <p className="tracker-meta">
               Applied {formatTime(new Date(activeTimer.appliedAt))} ·{' '}
-              {getActivityLabel(activeTimer.activityMode)} · every{' '}
-              {activeTimer.intervalMinutes} min
+              {getActivityLabel(activeTimer.activityMode)} · UV {activeTimer.uvAtApplication} at application
             </p>
             <p className="tracker-meta">
-              Next reapply ~{formatTime(new Date(activeTimer.nextReapplyAt))}
+              {liveIntervalMinutes
+                ? `Reapply every ${liveIntervalMinutes} min at current UV ${currentUv}`
+                : `UV is low (${currentUv}) — extended protection window`}
             </p>
             <div className="tracker-actions">
               <Button fullWidth onClick={handleApply}>
@@ -83,18 +95,17 @@ export function TimerPage() {
                 Clear timer
               </Button>
             </div>
-          </>
+          </ActiveTimerStatus>
         ) : (
           <>
+            <p className="timer-phase">No active protection</p>
             <p className="tracker-empty">
               Log when you apply sunscreen to start your reapply timer.
             </p>
             <p className="tracker-meta">
-              Current UV:{' '}
-              <strong style={{ color: uvRiskColor(currentUv) }}>{currentUv}</strong>
               {previewInterval
-                ? ` · Reapply every ${previewInterval} min`
-                : ' · No reapply needed (UV low)'}
+                ? `At current UV ${currentUv}, reapply every ${previewInterval} min`
+                : `UV is low (${currentUv}) — no reapply timer needed`}
             </p>
           </>
         )}

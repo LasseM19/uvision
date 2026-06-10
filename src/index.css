@@ -331,6 +331,170 @@ input {
   color: var(--color-text-muted);
 }
 
+.timer-uv-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.timer-uv-card--running {
+  border-color: rgba(255, 107, 53, 0.35);
+  box-shadow:
+    0 0 0 1px rgba(255, 107, 53, 0.12),
+    var(--shadow-card);
+}
+
+.active-timer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  text-align: center;
+}
+
+.active-timer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.active-timer__phase {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-orange);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.active-timer--finished .active-timer__phase {
+  color: var(--color-danger);
+}
+
+.active-timer__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-pill);
+  background: rgba(34, 197, 94, 0.12);
+  color: #15803d;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.active-timer__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: timer-live-pulse 1.6s ease-in-out infinite;
+}
+
+.active-timer--finished .active-timer__phase {
+  color: var(--color-danger);
+}
+
+.active-timer__reapply-hint {
+  margin: 0.125rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.timer-countdown--urgent {
+  color: var(--color-danger);
+}
+
+.active-timer--finished .active-timer__badge {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.active-timer--finished .active-timer__dot {
+  background: var(--color-danger);
+  animation: timer-live-pulse 0.9s ease-in-out infinite;
+}
+
+.timer-card--active {
+  border-color: rgba(255, 107, 53, 0.35);
+}
+
+.timer-card--active:has(.active-timer--finished) {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.bottom-nav__icon-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.bottom-nav__timer-live {
+  position: absolute;
+  top: -0.125rem;
+  right: -0.25rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 2px solid var(--color-white);
+  border-radius: 50%;
+  background: #22c55e;
+  animation: timer-live-pulse 1.6s ease-in-out infinite;
+}
+
+.bottom-nav__link--active .bottom-nav__timer-live {
+  border-color: var(--color-orange-soft);
+}
+
+.bottom-nav__timer-live--finished {
+  background: var(--color-danger);
+}
+
+@keyframes timer-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+.timer-uv-live {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.timer-uv-live__label {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.timer-uv-live__value {
+  margin: 0.125rem 0 0;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.timer-uv-live__risk {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
 .timer-card,
 .tracker-status-card {
   text-align: center;
