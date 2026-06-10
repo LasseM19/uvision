@@ -1,5 +1,4 @@
 import type { DailyForecast, ForecastData, HourlyForecast, Location } from '../types'
-import { getCurrentPositionWithRetry } from './geolocation'
 import {
   effectiveUv,
   recommendationFromForecast,
@@ -148,31 +147,4 @@ export async function searchCities(query: string): Promise<GeocodingResult[]> {
     longitude: r.longitude,
     label: [r.name, r.admin1, r.country].filter(Boolean).join(', '),
   }))
-}
-
-export async function reverseGeocode(lat: number, lon: number): Promise<string> {
-  const params = new URLSearchParams({
-    latitude: String(lat),
-    longitude: String(lon),
-    language: 'en',
-    format: 'json',
-  })
-
-  const response = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?${params}`)
-  if (!response.ok) return `${lat.toFixed(2)}, ${lon.toFixed(2)}`
-
-  const data = (await response.json()) as {
-    results?: Array<{ name: string; admin1?: string; country: string }>
-  }
-
-  const place = data.results?.[0]
-  if (!place) return `${lat.toFixed(2)}, ${lon.toFixed(2)}`
-  return [place.name, place.admin1, place.country].filter(Boolean).join(', ')
-}
-
-export async function resolveCurrentLocation(): Promise<Location> {
-  const position = await getCurrentPositionWithRetry()
-  const { latitude, longitude } = position.coords
-  const label = await reverseGeocode(latitude, longitude)
-  return { latitude, longitude, label }
 }

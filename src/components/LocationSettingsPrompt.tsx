@@ -1,24 +1,19 @@
 import { Button } from './Button'
 import { Card } from './Card'
-import {
-  getLocationSettingsGuide,
-  openLocationSettings,
-  type GeolocationPermission,
-} from '../lib/geolocation'
+import { getLocationSettingsGuide, openLocationSettings } from '../lib/geolocation'
 
 interface LocationSettingsPromptProps {
-  permission: GeolocationPermission
+  visible: boolean
   onTryAgain: () => void
   trying?: boolean
 }
 
 export function LocationSettingsPrompt({
-  permission,
+  visible,
   onTryAgain,
   trying = false,
 }: LocationSettingsPromptProps) {
-  const show = permission === 'denied'
-  if (!show) return null
+  if (!visible) return null
 
   const guide = getLocationSettingsGuide()
 
@@ -26,7 +21,8 @@ export function LocationSettingsPrompt({
     <Card className="location-settings-prompt">
       <p className="location-settings-prompt__title">{guide.title}</p>
       <p className="hint-text">
-        UVision needs your location for accurate UV forecasts. Location is currently blocked.
+        UVision needs your location for UV forecasts. Safari often blocks this until you allow it
+        for this specific website.
       </p>
       <ol className="location-settings-steps">
         {guide.steps.map((step) => (
@@ -35,10 +31,10 @@ export function LocationSettingsPrompt({
       </ol>
       <div className="location-settings-actions">
         <Button fullWidth onClick={openLocationSettings}>
-          {guide.settingsLabel}
+          {guide.primaryActionLabel}
         </Button>
         <Button variant="secondary" fullWidth onClick={onTryAgain} disabled={trying}>
-          {trying ? 'Checking…' : 'Try again'}
+          {trying ? 'Finding you…' : guide.secondaryActionLabel}
         </Button>
       </div>
     </Card>

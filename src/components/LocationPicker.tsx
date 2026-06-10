@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from './Button'
 import { Card } from './Card'
 import { LocationSettingsPrompt } from './LocationSettingsPrompt'
@@ -8,10 +8,9 @@ import {
   insecureContextMessage,
   isPermissionDeniedError,
   isSecureContextForGeolocation,
-  queryGeolocationPermission,
-  type GeolocationPermission,
+  resolveCurrentLocation,
 } from '../lib/geolocation'
-import { resolveCurrentLocation, searchCities } from '../lib/openMeteo'
+import { searchCities } from '../lib/openMeteo'
 
 interface LocationPickerProps {
   onSelect: (location: Location) => void
@@ -24,58 +23,50 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
   const [loading, setLoading] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [permission, setPermission] = useState<GeolocationPermission>('unknown')
-  const [showSettingsPrompt, setShowSettingsPrompt] = useState(false)
+  const [locationBlocked, setLocationBlocked] = useState(false)
+  const awaitingRetryRef = useRef(false)
   const secureContext = isSecureContextForGeolocation()
 
-  useEffect(() => {
-    let cancelled = false
-
-    async function watchPermission() {
-      if (!('permissions' in navigator)) return
-      try {
-        const result = await navigator.permissions.query({ name: 'geolocation' })
-        if (cancelled) return
-        setPermission(result.state as GeolocationPermission)
-        setShowSettingsPrompt(result.state === 'denied')
-        result.onchange = () => {
-          const state = result.state as GeolocationPermission
-          setPermission(state)
-          setShowSettingsPrompt(state === 'denied')
-          if (state === 'granted') setError(null)
-        }
-      } catch {
-        const state = await queryGeolocationPermission()
-        if (!cancelled) {
-          setPermission(state)
-          setShowSettingsPrompt(state === 'denied')
-        }
+  const useGps = useCallback(async () => {
+    setGpsLoading(true)
+    setError(null)
+    try {
+      const location = await resolveCurrentLocation()
+      setLocationBlocked(false)
+      awaitingRetryRef.current = false
+      onSelect(location)
+    } catch (err) {
+      if (isPermissionDeniedError(err)) {
+        setLocationBlocked(true)
+        awaitingRetryRef.current = true
+        setError('Location is blocked for this website. Follow the Safari steps below, then tap Try again.')
+      } else {
+        setError(geolocationErrorMessage(err))
       }
+    } finally {
+      setGpsLoading(false)
     }
-
-    void watchPermission()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    const refreshPermission = () => {
-      void queryGeolocationPermission().then((state) => {
-        setPermission(state)
-        setShowSettingsPrompt(state === 'denied')
-      })
-    }
-
-    document.addEventListener('visibilitychange', refreshPermission)
-    return () => document.removeEventListener('visibilitychange', refreshPermission)
-  }, [])
+  }, [onSelect])
 
   useEffect(() => {
     if (!secureContext) {
       setError(insecureContextMessage())
     }
   }, [secureContext])
+
+  useEffect(() => {
+    const retryAfterSettings = () => {
+      if (document.visibilityState !== 'visible' || !awaitingRetryRef.current) return
+      void useGps()
+    }
+
+    document.addEventListener('visibilitychange', retryAfterSettings)
+    window.addEventListener('focus', retryAfterSettings)
+    return () => {
+      document.removeEventListener('visibilitychange', retryAfterSettings)
+      window.removeEventListener('focus', retryAfterSettings)
+    }
+  }, [useGps])
 
   useEffect(() => {
     if (query.length < 2) {
@@ -85,12 +76,13 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
 
     const id = window.setTimeout(async () => {
       setLoading(true)
-      if (secureContext && permission !== 'denied') setError(null)
       try {
         const cities = await searchCities(query)
         setResults(cities)
         if (cities.length === 0) {
           setError('No cities found — try a different spelling.')
+        } else if (!locationBlocked) {
+          setError(null)
         }
       } catch {
         setError('Could not search cities. Check your internet connection.')
@@ -100,27 +92,7 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
     }, 300)
 
     return () => window.clearTimeout(id)
-  }, [query, secureContext, permission])
-
-  async function useGps() {
-    setGpsLoading(true)
-    setError(null)
-    try {
-      const location = await resolveCurrentLocation()
-      onSelect(location)
-    } catch (err) {
-      const state = await queryGeolocationPermission()
-      setPermission(state)
-      if (isPermissionDeniedError(err) || state === 'denied') {
-        setShowSettingsPrompt(true)
-        setError('Location access is blocked. Open settings below to allow it for UVision.')
-      } else {
-        setError(geolocationErrorMessage(err))
-      }
-    } finally {
-      setGpsLoading(false)
-    }
-  }
+  }, [query, locationBlocked])
 
   return (
     <Card className="location-picker">
@@ -136,13 +108,11 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
       </div>
       <p className="hint-text">We use your location for UV forecasts only — never shared.</p>
 
-      {showSettingsPrompt && (
-        <LocationSettingsPrompt
-          permission={permission}
-          onTryAgain={() => void useGps()}
-          trying={gpsLoading}
-        />
-      )}
+      <LocationSettingsPrompt
+        visible={locationBlocked}
+        onTryAgain={() => void useGps()}
+        trying={gpsLoading}
+      />
 
       {!secureContext && <p className="warning-text">{insecureContextMessage()}</p>}
 
