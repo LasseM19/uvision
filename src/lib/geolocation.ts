@@ -123,6 +123,14 @@ export function canOpenSystemLocationSettings(): boolean {
 }
 
 export function isPermissionDeniedError(error: unknown): boolean {
+  if (typeof GeolocationPositionError === 'undefined') {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as { code: number }).code === 1
+    )
+  }
   return error instanceof GeolocationPositionError && error.code === error.PERMISSION_DENIED
 }
 
@@ -137,7 +145,7 @@ export async function queryGeolocationPermission(): Promise<GeolocationPermissio
 }
 
 export function geolocationErrorMessage(error: unknown): string {
-  if (error instanceof GeolocationPositionError) {
+  if (typeof GeolocationPositionError !== 'undefined' && error instanceof GeolocationPositionError) {
     switch (error.code) {
       case error.PERMISSION_DENIED:
         return 'Location access is blocked for this website. Follow the steps below, then tap Try again.'
