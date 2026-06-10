@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
+import { LocationPicker } from '../components/LocationPicker'
 import { useAppContext } from '../context/AppContext'
 import { clearAppCacheAndReload } from '../lib/clearCache'
 import { getSkinTypeLabel, getSpfLabel } from '../lib/storage'
@@ -68,7 +69,8 @@ export function HistoryPage() {
 }
 
 export function SettingsPage() {
-  const { preferences, setPreferences } = useAppContext()
+  const { preferences, setPreferences, location, setLocation } = useAppContext()
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
 
   async function requestNotifications() {
     if (!('Notification' in window)) return
@@ -84,6 +86,26 @@ export function SettingsPage() {
           <h1 className="page-title">Preferences</h1>
         </div>
       </header>
+
+      <section className="section">
+        <h2 className="section-title">Location</h2>
+        {showLocationPicker ? (
+          <LocationPicker
+            onSelect={(loc) => {
+              setLocation(loc)
+              setShowLocationPicker(false)
+            }}
+            onClose={() => setShowLocationPicker(false)}
+          />
+        ) : (
+          <Card className="location-settings-card">
+            <p className="location-settings-current">{location?.label ?? 'No location set'}</p>
+            <Button variant="secondary" fullWidth onClick={() => setShowLocationPicker(true)}>
+              Change location
+            </Button>
+          </Card>
+        )}
+      </section>
 
       <section className="section">
         <h2 className="section-title">Skin type</h2>

@@ -1,16 +1,14 @@
-import { useState } from 'react'
 import { Card } from '../components/Card'
 import { Button } from '../components/Button'
+import { LocationBar } from '../components/LocationBar'
 import { useAppContext } from '../context/AppContext'
 import { useForecast } from '../hooks/useForecast'
 import { WeatherIconDisplay } from '../components/WeatherIcon'
 import { formatDate } from '../lib/uvLogic'
-import { LocationPicker } from '../components/LocationPicker'
 
 export function ForecastPage() {
-  const { location, setLocation } = useAppContext()
+  const { location } = useAppContext()
   const { forecast, loading, error, refresh } = useForecast(location)
-  const [showLocation, setShowLocation] = useState(false)
 
   return (
     <div className="page">
@@ -21,23 +19,7 @@ export function ForecastPage() {
         </div>
       </header>
 
-      {location ? (
-        <button type="button" className="location-chip" onClick={() => setShowLocation(true)}>
-          📍 {location.label}
-        </button>
-      ) : (
-        <LocationPicker onSelect={setLocation} />
-      )}
-
-      {showLocation && location && (
-        <LocationPicker
-          onSelect={(loc) => {
-            setLocation(loc)
-            setShowLocation(false)
-          }}
-          onClose={() => setShowLocation(false)}
-        />
-      )}
+      <LocationBar />
 
       {loading && <p className="status-text">Loading forecast…</p>}
       {error && (

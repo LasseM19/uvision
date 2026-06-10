@@ -1,13 +1,12 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
+import { LocationBar } from '../components/LocationBar'
 import { WeatherIconDisplay } from '../components/WeatherIcon'
 import { useAppContext } from '../context/AppContext'
 import { useForecast } from '../hooks/useForecast'
 import { timerPhaseLabel } from '../lib/sunscreenTimer'
 import { formatDuration, formatTime, uvRiskColor, uvRiskLabel } from '../lib/uvLogic'
-import { LocationPicker } from '../components/LocationPicker'
 
 const recommendationStyles = {
   'take-sunscreen': { badge: 'Take sunscreen today', className: 'rec--take' },
@@ -16,10 +15,8 @@ const recommendationStyles = {
 } as const
 
 export function HomePage() {
-  const { location, setLocation, preferences } = useAppContext()
+  const { location, preferences, activeTimer, phase, minutesLeft } = useAppContext()
   const { forecast, loading, error, refresh } = useForecast(location)
-  const { activeTimer, phase, minutesLeft } = useAppContext()
-  const [showLocation, setShowLocation] = useState(!location)
 
   const today = forecast?.daily[0]
   const currentHour = forecast?.hourlyToday.find((h) => {
@@ -41,19 +38,7 @@ export function HomePage() {
         </Link>
       </header>
 
-      {showLocation || !location ? (
-        <LocationPicker
-          onSelect={(loc) => {
-            setLocation(loc)
-            setShowLocation(false)
-          }}
-          onClose={location ? () => setShowLocation(false) : undefined}
-        />
-      ) : (
-        <button type="button" className="location-chip" onClick={() => setShowLocation(true)}>
-          📍 {location.label}
-        </button>
-      )}
+      <LocationBar />
 
       {loading && <p className="status-text">Loading forecast…</p>}
       {error && (

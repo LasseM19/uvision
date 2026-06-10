@@ -1,23 +1,19 @@
 import { useState } from 'react'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
+import { LocationBar } from '../components/LocationBar'
 import { useAppContext } from '../context/AppContext'
 import { useForecast } from '../hooks/useForecast'
 import { getActivityLabel } from '../lib/storage'
-import {
-  calculateReapplyInterval,
-  timerPhaseLabel,
-} from '../lib/sunscreenTimer'
+import { calculateReapplyInterval, timerPhaseLabel } from '../lib/sunscreenTimer'
 import { formatDuration, formatTime, uvRiskColor } from '../lib/uvLogic'
 import type { ActivityMode } from '../types'
-import { LocationPicker } from '../components/LocationPicker'
 
 const activityModes: ActivityMode[] = ['normal', 'swimming', 'sports']
 
 export function TrackerPage() {
   const {
     location,
-    setLocation,
     preferences,
     activeTimer,
     phase,
@@ -28,7 +24,6 @@ export function TrackerPage() {
   } = useAppContext()
   const { forecast } = useForecast(location)
   const [activityMode, setActivityMode] = useState<ActivityMode>('normal')
-  const [showLocation, setShowLocation] = useState(!location)
 
   const currentUv =
     forecast?.hourlyToday.find((h) => h.time.getTime() <= Date.now())?.effectiveUv ??
@@ -62,19 +57,7 @@ export function TrackerPage() {
         </div>
       </header>
 
-      {showLocation || !location ? (
-        <LocationPicker
-          onSelect={(loc) => {
-            setLocation(loc)
-            setShowLocation(false)
-          }}
-          onClose={location ? () => setShowLocation(false) : undefined}
-        />
-      ) : (
-        <button type="button" className="location-chip" onClick={() => setShowLocation(true)}>
-          📍 {location.label}
-        </button>
-      )}
+      <LocationBar />
 
       <Card className="tracker-status-card">
         <p className="timer-phase">{timerPhaseLabel(phase)}</p>
