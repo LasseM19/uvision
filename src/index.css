@@ -696,28 +696,50 @@ input {
 }
 
 .log-item {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.log-item__content {
-  flex: 1;
-  min-width: 0;
+  margin: 0;
   text-align: left;
 }
 
-.log-item__delete {
-  flex-shrink: 0;
-  padding: 0.375rem 0.625rem !important;
-  min-height: auto;
-  font-size: 0.8125rem !important;
-  color: var(--color-text-muted) !important;
+.log-item__content {
+  min-width: 0;
 }
 
-.log-item__delete:active {
-  color: var(--color-danger) !important;
+.swipe-delete {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+}
+
+.swipe-delete__action {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 5.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--color-danger);
+  color: var(--color-white);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.swipe-delete__panel {
+  position: relative;
+  z-index: 1;
+  touch-action: pan-y;
+  transition: transform 0.22s ease;
+  will-change: transform;
+}
+
+.swipe-delete__panel--dragging {
+  transition: none;
+}
+
+.log-list-hint {
+  margin: -0.25rem 0 0;
 }
 
 .log-date {

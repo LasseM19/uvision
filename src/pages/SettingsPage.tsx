@@ -41,11 +41,14 @@ export function HistoryPage() {
           </Link>
         </Card>
       ) : (
-        <div className="log-list">
+        <>
+          <p className="hint-text log-list-hint">Swipe left on an entry to delete.</p>
+          <div className="log-list">
           {logs.map((log) => (
             <ApplicationLogCard key={log.id} log={log} onDelete={deleteApplicationLog} />
           ))}
-        </div>
+          </div>
+        </>
       )}
 
     </div>

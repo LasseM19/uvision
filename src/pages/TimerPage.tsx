@@ -143,6 +143,7 @@ export function TimerPage() {
       {logs.length > 0 && (
         <section className="section">
           <h2 className="section-title">Recent applications</h2>
+          <p className="hint-text log-list-hint">Swipe left on an entry to delete.</p>
           <div className="log-list">
             {logs.slice(0, 5).map((log) => (
               <ApplicationLogCard
