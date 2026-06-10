@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Button } from './Button'
 import { Card } from './Card'
+import { LocationSettingsPrompt } from './LocationSettingsPrompt'
 import type { Location } from '../types'
 import {
   geolocationErrorMessage,
   insecureContextMessage,
+  isPermissionDeniedError,
   isSecureContextForGeolocation,
   queryGeolocationPermission,
   type GeolocationPermission,
@@ -23,10 +25,50 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
   const [gpsLoading, setGpsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [permission, setPermission] = useState<GeolocationPermission>('unknown')
+  const [showSettingsPrompt, setShowSettingsPrompt] = useState(false)
   const secureContext = isSecureContextForGeolocation()
 
   useEffect(() => {
-    void queryGeolocationPermission().then(setPermission)
+    let cancelled = false
+
+    async function watchPermission() {
+      if (!('permissions' in navigator)) return
+      try {
+        const result = await navigator.permissions.query({ name: 'geolocation' })
+        if (cancelled) return
+        setPermission(result.state as GeolocationPermission)
+        setShowSettingsPrompt(result.state === 'denied')
+        result.onchange = () => {
+          const state = result.state as GeolocationPermission
+          setPermission(state)
+          setShowSettingsPrompt(state === 'denied')
+          if (state === 'granted') setError(null)
+        }
+      } catch {
+        const state = await queryGeolocationPermission()
+        if (!cancelled) {
+          setPermission(state)
+          setShowSettingsPrompt(state === 'denied')
+        }
+      }
+    }
+
+    void watchPermission()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    const refreshPermission = () => {
+      void queryGeolocationPermission().then((state) => {
+        setPermission(state)
+        setShowSettingsPrompt(state === 'denied')
+      })
+    }
+
+    document.addEventListener('visibilitychange', refreshPermission)
+    return () => document.removeEventListener('visibilitychange', refreshPermission)
   }, [])
 
   useEffect(() => {
@@ -43,7 +85,7 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
 
     const id = window.setTimeout(async () => {
       setLoading(true)
-      setError(secureContext ? null : insecureContextMessage())
+      if (secureContext && permission !== 'denied') setError(null)
       try {
         const cities = await searchCities(query)
         setResults(cities)
@@ -58,7 +100,7 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
     }, 300)
 
     return () => window.clearTimeout(id)
-  }, [query, secureContext])
+  }, [query, secureContext, permission])
 
   async function useGps() {
     setGpsLoading(true)
@@ -67,8 +109,14 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
       const location = await resolveCurrentLocation()
       onSelect(location)
     } catch (err) {
-      setError(geolocationErrorMessage(err))
-      setPermission(await queryGeolocationPermission())
+      const state = await queryGeolocationPermission()
+      setPermission(state)
+      if (isPermissionDeniedError(err) || state === 'denied') {
+        setShowSettingsPrompt(true)
+        setError('Location access is blocked. Open settings below to allow it for UVision.')
+      } else {
+        setError(geolocationErrorMessage(err))
+      }
     } finally {
       setGpsLoading(false)
     }
@@ -88,16 +136,15 @@ export function LocationPicker({ onSelect, onClose }: LocationPickerProps) {
       </div>
       <p className="hint-text">We use your location for UV forecasts only — never shared.</p>
 
-      {permission === 'denied' && (
-        <p className="warning-text">
-          Location is blocked for this site. In Safari: Settings → Privacy → Location Services. In
-          Chrome: click the lock icon in the address bar → Location → Allow.
-        </p>
+      {showSettingsPrompt && (
+        <LocationSettingsPrompt
+          permission={permission}
+          onTryAgain={() => void useGps()}
+          trying={gpsLoading}
+        />
       )}
 
-      {!secureContext && (
-        <p className="warning-text">{insecureContextMessage()}</p>
-      )}
+      {!secureContext && <p className="warning-text">{insecureContextMessage()}</p>}
 
       <Button fullWidth onClick={() => void useGps()} disabled={gpsLoading || !secureContext}>
         {gpsLoading ? 'Finding you…' : 'Use my current location'}

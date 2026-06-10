@@ -12,6 +12,105 @@ export function isSecureContextForGeolocation(): boolean {
 
 export type GeolocationPermission = 'granted' | 'denied' | 'prompt' | 'unknown'
 
+export type LocationSettingsPlatform = 'ios-pwa' | 'ios-safari' | 'android' | 'other'
+
+export interface LocationSettingsGuide {
+  platform: LocationSettingsPlatform
+  title: string
+  steps: string[]
+  settingsLabel: string
+}
+
+export function isIosDevice(): boolean {
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  )
+}
+
+export function isAndroidDevice(): boolean {
+  return /Android/.test(navigator.userAgent)
+}
+
+export function isStandalonePwa(): boolean {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  )
+}
+
+export function getLocationSettingsGuide(): LocationSettingsGuide {
+  if (isIosDevice() && isStandalonePwa()) {
+    return {
+      platform: 'ios-pwa',
+      title: 'Allow location for UVision',
+      settingsLabel: 'Open iPhone Settings',
+      steps: [
+        'Tap "Open iPhone Settings" below',
+        'Open Location (or Privacy & Security → Location Services)',
+        'Choose "While Using the App" or "Allow"',
+        'Return to UVision and tap "Try again"',
+      ],
+    }
+  }
+
+  if (isIosDevice()) {
+    return {
+      platform: 'ios-safari',
+      title: 'Allow location for this website',
+      settingsLabel: 'Open iPhone Settings',
+      steps: [
+        'Tap "Open iPhone Settings" below',
+        'Go to Apps → Safari → Location',
+        'Set to "Ask" or "Allow"',
+        'Return to Safari, tap the address bar → Website Settings → Location → Allow',
+        'Come back here and tap "Try again"',
+      ],
+    }
+  }
+
+  if (isAndroidDevice()) {
+    return {
+      platform: 'android',
+      title: 'Allow location for this website',
+      settingsLabel: 'Open phone settings',
+      steps: [
+        'Tap the lock icon next to the website address',
+        'Open Permissions → Location → Allow',
+        'Return to UVision and tap "Try again"',
+      ],
+    }
+  }
+
+  return {
+    platform: 'other',
+    title: 'Allow location for this website',
+    settingsLabel: 'Open browser settings',
+    steps: [
+      'Open your browser settings for this site',
+      'Find Location permissions and set to Allow',
+      'Return here and tap "Try again"',
+    ],
+  }
+}
+
+/** Opens the device settings app where possible (iOS). */
+export function openLocationSettings(): void {
+  if (isIosDevice()) {
+    window.location.href = 'app-settings:'
+    return
+  }
+
+  if (isAndroidDevice()) {
+    // Best-effort: opens Android settings; site permissions still need manual step in Chrome.
+    window.location.href = 'intent://settings/#Intent;scheme=android-app;end'
+  }
+}
+
+export function isPermissionDeniedError(error: unknown): boolean {
+  return error instanceof GeolocationPositionError && error.code === error.PERMISSION_DENIED
+}
+
 export async function queryGeolocationPermission(): Promise<GeolocationPermission> {
   if (!isGeolocationSupported()) return 'unknown'
   try {
