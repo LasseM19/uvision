@@ -15,7 +15,9 @@ export interface Location {
   label: string
 }
 
-export type HomeGeofenceRadius = 100 | 150 | 200 | 300
+export type AppLanguage = 'en' | 'nl'
+
+export type HomeGeofenceRadius = 100 | 150 | 200 | 300 | 500
 
 export interface HomeLocation {
   latitude: number
@@ -40,6 +42,7 @@ export interface UserPreferences {
   notificationsEnabled: boolean
   leaveHomeAlertsEnabled: boolean
   homeGeofenceRadiusMeters: HomeGeofenceRadius
+  language: AppLanguage
 }
 
 export interface HourlyForecast {
@@ -106,4 +109,5 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   notificationsEnabled: false,
   leaveHomeAlertsEnabled: false,
   homeGeofenceRadiusMeters: 150,
+  language: 'en',
 }

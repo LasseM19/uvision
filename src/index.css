@@ -173,7 +173,7 @@ input {
   width: min(var(--max-width), calc(100% - 2 * var(--page-inset-x)));
   height: var(--nav-height);
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   background: var(--color-white);
   border-top: 1px solid var(--color-border);
   padding: 0.5rem 0 calc(0.625rem + env(safe-area-inset-bottom));
@@ -765,7 +765,7 @@ input {
 }
 
 .bottom-nav__label {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 
 .location-map-wrap {

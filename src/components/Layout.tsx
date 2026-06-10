@@ -1,15 +1,26 @@
 import { Outlet } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
 import { LocationServices } from './LocationServices'
+import { usePushSync } from '../hooks/usePushSync'
 
-export function Layout() {
+function LayoutContent() {
+  usePushSync()
+
   return (
-    <div className="app-shell">
+    <>
       <main className="app-main">
         <LocationServices />
         <Outlet />
       </main>
       <BottomNav />
+    </>
+  )
+}
+
+export function Layout() {
+  return (
+    <div className="app-shell">
+      <LayoutContent />
     </div>
   )
 }

@@ -2,10 +2,8 @@ import { NavLink } from 'react-router-dom'
 
 const links = [
   { to: '/', label: 'Home', icon: '☀' },
-  { to: '/map', label: 'Map', icon: '📍' },
-  { to: '/tracker', label: 'Tracker', icon: '🧴' },
-  { to: '/forecast', label: 'Forecast', icon: '📅' },
-  { to: '/learn', label: 'Learn', icon: '📖' },
+  { to: '/timer', label: 'Timer', icon: '⏱' },
+  { to: '/account', label: 'Account', icon: '👤' },
 ]
 
 export function BottomNav() {
@@ -15,7 +13,9 @@ export function BottomNav() {
         <NavLink
           key={link.to}
           to={link.to}
-          className={({ isActive }) => `bottom-nav__link${isActive ? ' bottom-nav__link--active' : ''}`}
+          className={({ isActive }) =>
+            `bottom-nav__link${isActive ? ' bottom-nav__link--active' : ''}`
+          }
           end={link.to === '/'}
         >
           <span className="bottom-nav__icon" aria-hidden>

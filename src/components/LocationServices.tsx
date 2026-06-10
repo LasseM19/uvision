@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { DepartureBanner } from './DepartureBanner'
 import { useAppContext } from '../context/AppContext'
 import { useForecast } from '../hooks/useForecast'
@@ -13,7 +13,6 @@ import { getLastDepartureAlertDate, markDepartureAlertSent } from '../lib/storag
 
 export function LocationServices() {
   const navigate = useNavigate()
-  const route = useLocation()
   const {
     homeLocation,
     preferences,
@@ -32,9 +31,7 @@ export function LocationServices() {
   }, [markLocationAccessDenied])
 
   const trackingEnabled =
-    liveTrackingEnabled &&
-    (route.pathname === '/map' ||
-      Boolean(homeLocation && preferences.leaveHomeAlertsEnabled))
+    liveTrackingEnabled && Boolean(homeLocation && preferences.leaveHomeAlertsEnabled)
 
   const { position } = useLivePosition({
     enabled: trackingEnabled,
@@ -103,7 +100,7 @@ export function LocationServices() {
       onDismiss={() => setDepartureBanner(null)}
       onApply={() => {
         setDepartureBanner(null)
-        navigate('/tracker')
+        navigate('/timer')
       }}
     />
   )

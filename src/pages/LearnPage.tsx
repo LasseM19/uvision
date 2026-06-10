@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Card } from '../components/Card'
 import { educationArticles } from '../data/education'
 
@@ -6,8 +7,8 @@ export function LearnPage() {
     <div className="page">
       <header className="page-header">
         <div>
-          <p className="eyebrow">Learn</p>
-          <h1 className="page-title">Sun safety tips</h1>
+          <p className="eyebrow">Account</p>
+          <h1 className="page-title">Learn about UV</h1>
         </div>
       </header>
 
@@ -19,6 +20,10 @@ export function LearnPage() {
           </Card>
         ))}
       </div>
+
+      <Link to="/account" className="text-link">
+        ← Back to account
+      </Link>
     </div>
   )
 }

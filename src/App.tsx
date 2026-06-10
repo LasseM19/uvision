@@ -2,12 +2,11 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { StandaloneShell } from './components/StandaloneShell'
 import { AppProvider, useAppContext } from './context/AppContext'
-import { ForecastPage } from './pages/ForecastPage'
+import { AccountPage } from './pages/AccountPage'
 import { HomePage } from './pages/HomePage'
 import { LearnPage } from './pages/LearnPage'
-import { HistoryPage, OnboardingPage, SettingsPage } from './pages/SettingsPage'
-import { MapPage } from './pages/MapPage'
-import { TrackerPage } from './pages/TrackerPage'
+import { HistoryPage, OnboardingPage } from './pages/SettingsPage'
+import { TimerPage } from './pages/TimerPage'
 
 function AppRoutes() {
   const { preferences } = useAppContext()
@@ -33,12 +32,16 @@ function AppRoutes() {
       />
       <Route element={<Layout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/map" element={<MapPage />} />
-        <Route path="/tracker" element={<TrackerPage />} />
-        <Route path="/forecast" element={<ForecastPage />} />
-        <Route path="/learn" element={<LearnPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/history" element={<HistoryPage />} />
+        <Route path="/timer" element={<TimerPage />} />
+        <Route path="/account" element={<AccountPage />} />
+        <Route path="/account/learn" element={<LearnPage />} />
+        <Route path="/account/history" element={<HistoryPage />} />
+        <Route path="/tracker" element={<Navigate to="/timer" replace />} />
+        <Route path="/map" element={<Navigate to="/account" replace />} />
+        <Route path="/forecast" element={<Navigate to="/" replace />} />
+        <Route path="/settings" element={<Navigate to="/account" replace />} />
+        <Route path="/learn" element={<Navigate to="/account/learn" replace />} />
+        <Route path="/history" element={<Navigate to="/account/history" replace />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

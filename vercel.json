@@ -87,7 +87,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!assets/|favicon\\.svg|pwa-192\\.png|pwa-512\\.png|manifest\\.webmanifest|reset\\.html|safari-fix\\.html|sw\\.js|workbox-|registerSW\\.js).*)",
+      "source": "/((?!assets/|favicon\\.svg|pwa-192\\.png|pwa-512\\.png|manifest\\.webmanifest|reset\\.html|safari-fix\\.html|push-sw\\.js|sw\\.js|workbox-|registerSW\\.js).*)",
       "destination": "/index.html"
     }
   ]

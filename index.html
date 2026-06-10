@@ -47,14 +47,10 @@
           if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function (regs) {
               regs.forEach(function (reg) {
-                reg.unregister()
-              })
-            })
-          }
-          if ('caches' in window) {
-            caches.keys().then(function (keys) {
-              keys.forEach(function (key) {
-                caches.delete(key)
+                var url = reg.active?.scriptURL || reg.installing?.scriptURL || ''
+                if (url.includes('workbox') || url.includes('registerSW')) {
+                  reg.unregister()
+                }
               })
             })
           }

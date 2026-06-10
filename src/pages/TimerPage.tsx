@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
-import { LocationBar } from '../components/LocationBar'
 import { useAppContext } from '../context/AppContext'
 import { useForecast } from '../hooks/useForecast'
 import { getActivityLabel } from '../lib/storage'
@@ -11,7 +10,7 @@ import type { ActivityMode } from '../types'
 
 const activityModes: ActivityMode[] = ['normal', 'swimming', 'sports']
 
-export function TrackerPage() {
+export function TimerPage() {
   const {
     location,
     preferences,
@@ -52,12 +51,16 @@ export function TrackerPage() {
     <div className="page">
       <header className="page-header">
         <div>
-          <p className="eyebrow">Tracker</p>
+          <p className="eyebrow">Timer</p>
           <h1 className="page-title">Sunscreen</h1>
         </div>
       </header>
 
-      <LocationBar />
+      {!location && (
+        <Card className="banner-card">
+          <p className="hint-text">Set your location on Home first so we can calculate UV for your timer.</p>
+        </Card>
+      )}
 
       <Card className="tracker-status-card">
         <p className="timer-phase">{timerPhaseLabel(phase)}</p>
@@ -132,7 +135,7 @@ export function TrackerPage() {
         <section className="section">
           <h2 className="section-title">Recent applications</h2>
           <div className="log-list">
-            {logs.slice(0, 7).map((log) => (
+            {logs.slice(0, 5).map((log) => (
               <Card key={log.id} className="log-item">
                 <div>
                   <p className="log-date">
