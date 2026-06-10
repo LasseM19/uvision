@@ -26,6 +26,7 @@ import {
   clearAllUserData,
   clearHomeLocation as clearStoredHome,
   loadState,
+  removeApplicationLog,
   saveHomeLocation,
   saveLocation,
   setActiveTimer,
@@ -78,6 +79,7 @@ interface AppContextValue {
   forecastTimezoneAbbreviation: string | null
   logs: ApplicationLog[]
   applySunscreen: (input: ApplySunscreenInput) => void
+  deleteApplicationLog: (id: string) => void
   dismissTimer: () => void
   logout: () => Promise<void>
 }
@@ -217,6 +219,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLocalTimer(null)
   }, [])
 
+  const deleteApplicationLog = useCallback((id: string) => {
+    const nextLogs = removeApplicationLog(id)
+    setLogs(nextLogs)
+  }, [])
+
   const logout = useCallback(async () => {
     try {
       await unsubscribeFromBackendPush()
@@ -263,6 +270,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       forecastTimezoneAbbreviation,
       logs,
       applySunscreen,
+      deleteApplicationLog,
       dismissTimer,
       logout,
     }),
@@ -293,6 +301,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       forecastTimezoneAbbreviation,
       logs,
       applySunscreen,
+      deleteApplicationLog,
       dismissTimer,
       logout,
     ],

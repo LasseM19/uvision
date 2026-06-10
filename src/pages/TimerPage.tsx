@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { ActiveTimerStatus } from '../components/ActiveTimerStatus'
+import { ApplicationLogCard } from '../components/ApplicationLogCard'
 import { PageBrandHeader } from '../components/PageBrandHeader'
 import { useAppContext } from '../context/AppContext'
 import { getActivityLabel } from '../lib/storage'
@@ -25,6 +26,7 @@ export function TimerPage() {
     forecastTimezoneAbbreviation,
     applySunscreen,
     dismissTimer,
+    deleteApplicationLog,
     logs,
   } = useAppContext()
   const [activityMode, setActivityMode] = useState<ActivityMode>('normal')
@@ -143,22 +145,12 @@ export function TimerPage() {
           <h2 className="section-title">Recent applications</h2>
           <div className="log-list">
             {logs.slice(0, 5).map((log) => (
-              <Card key={log.id} className="log-item">
-                <div>
-                  <p className="log-date">
-                    {new Date(log.appliedAt).toLocaleDateString([], {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                    })}{' '}
-                    · {formatTime(new Date(log.appliedAt))}
-                  </p>
-                  <p className="log-meta">
-                    UV {log.uvAtApplication} · {getActivityLabel(log.activityMode)} · every{' '}
-                    {log.intervalMinutes} min
-                  </p>
-                </div>
-              </Card>
+              <ApplicationLogCard
+                key={log.id}
+                log={log}
+                variant="compact"
+                onDelete={deleteApplicationLog}
+              />
             ))}
           </div>
         </section>

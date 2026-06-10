@@ -3,12 +3,13 @@ import { Link, Navigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { AccountSubpageHeader } from '../components/AccountSubpageHeader'
+import { ApplicationLogCard } from '../components/ApplicationLogCard'
 import { Logo } from '../components/Logo'
 import { useAppContext } from '../context/AppContext'
 import { getSkinTypeLabel, getSpfLabel } from '../lib/storage'
 
 export function HistoryPage() {
-  const { logs } = useAppContext()
+  const { logs, deleteApplicationLog } = useAppContext()
 
   const stats = useMemo(() => {
     const now = Date.now()
@@ -42,20 +43,7 @@ export function HistoryPage() {
       ) : (
         <div className="log-list">
           {logs.map((log) => (
-            <Card key={log.id} className="log-item">
-              <p className="log-date">
-                {new Date(log.appliedAt).toLocaleString([], {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                })}
-              </p>
-              <p className="log-meta">
-                {log.locationLabel} · UV {log.uvAtApplication} · every {log.intervalMinutes} min
-              </p>
-            </Card>
+            <ApplicationLogCard key={log.id} log={log} onDelete={deleteApplicationLog} />
           ))}
         </div>
       )}

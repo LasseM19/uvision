@@ -106,6 +106,13 @@ export function addApplicationLog(log: ApplicationLog): ApplicationLog[] {
   return applicationLogs
 }
 
+export function removeApplicationLog(id: string): ApplicationLog[] {
+  const state = loadState()
+  const applicationLogs = state.applicationLogs.filter((log) => log.id !== id)
+  saveState({ applicationLogs })
+  return applicationLogs
+}
+
 export function setActiveTimer(timer: ActiveTimer | null): ActiveTimer | null {
   saveState({ activeTimer: timer })
   return timer

@@ -695,6 +695,42 @@ input {
   gap: 0.75rem;
 }
 
+.log-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.log-item__content {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.log-item__delete {
+  flex-shrink: 0;
+  padding: 0.375rem 0.625rem !important;
+  min-height: auto;
+  font-size: 0.8125rem !important;
+  color: var(--color-text-muted) !important;
+}
+
+.log-item__delete:active {
+  color: var(--color-danger) !important;
+}
+
+.log-date {
+  margin: 0;
+  font-weight: 600;
+}
+
+.log-meta {
+  margin: 0.125rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
 .daily-card-main {
   display: flex;
   justify-content: space-between;
