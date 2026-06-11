@@ -17,7 +17,7 @@ export interface Location {
 
 export type AppLanguage = 'en' | 'nl'
 
-export type HomeGeofenceRadius = 100 | 150 | 200 | 300 | 500
+export type HomeGeofenceRadius = 50 | 75 | 100 | 150 | 200 | 300 | 500
 
 export interface HomeLocation {
   latitude: number

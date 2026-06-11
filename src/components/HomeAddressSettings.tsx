@@ -5,14 +5,13 @@ import { LocationSettingsPrompt } from './LocationSettingsPrompt'
 import { useAppContext } from '../context/AppContext'
 import { useI18n } from '../hooks/useI18n'
 import { geolocationErrorMessageForLang } from '../i18n'
+import { reverseGeocodeHomeAddress, searchAddresses } from '../lib/addressSearch'
 import {
   ensureGeolocationAccess,
   isPermissionDeniedError,
   isSecureContextForGeolocation,
-  reverseGeocodeLabel,
 } from '../lib/geolocation'
-import { searchCities } from '../lib/openMeteo'
-import type { HomeGeofenceRadius, Location } from '../types'
+import type { HomeGeofenceRadius } from '../types'
 
 interface HomeAddressSettingsProps {
   onHomeSaved?: () => void
@@ -20,6 +19,7 @@ interface HomeAddressSettingsProps {
 
 export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
   const {
+    location,
     homeLocation,
     preferences,
     setHomeLocation,
@@ -32,7 +32,9 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
   const { t, lang } = useI18n()
 
   const [query, setQuery] = useState(homeLocation?.label ?? '')
-  const [results, setResults] = useState<Location[]>([])
+  const [results, setResults] = useState<
+    Array<{ latitude: number; longitude: number; label: string }>
+  >([])
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -44,24 +46,39 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
   }, [locationPermissionDenied])
 
   useEffect(() => {
-    if (query.length < 2) {
+    if (homeLocation) {
+      setQuery(homeLocation.label)
+    }
+  }, [homeLocation])
+
+  useEffect(() => {
+    if (query.trim().length < 3) {
       setResults([])
       return
     }
 
     const id = window.setTimeout(async () => {
       setLoading(true)
+      setError(null)
       try {
-        setResults(await searchCities(query))
+        const matches = await searchAddresses(
+          query,
+          location ? { latitude: location.latitude, longitude: location.longitude } : undefined,
+        )
+        setResults(matches)
+        if (matches.length === 0) {
+          setError(t('homeAddress.noResults'))
+        }
       } catch {
         setError(t('homeAddress.searchFailed'))
+        setResults([])
       } finally {
         setLoading(false)
       }
-    }, 300)
+    }, 350)
 
     return () => window.clearTimeout(id)
-  }, [query, t])
+  }, [query, location, t])
 
   async function saveHome(latitude: number, longitude: number, label: string) {
     setSaving(true)
@@ -70,10 +87,12 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
       setHomeLocation({
         latitude,
         longitude,
-        label: label.split(',')[0] || label,
+        label,
         radiusMeters: preferences.homeGeofenceRadiusMeters,
         setAt: new Date().toISOString(),
       })
+      setQuery(label)
+      setResults([])
       onHomeSaved?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : t('homeAddress.couldNotSave'))
@@ -89,7 +108,11 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
     try {
       const position = await ensureGeolocationAccess()
       markLocationAccessGranted()
-      const label = await reverseGeocodeLabel(position.coords.latitude, position.coords.longitude)
+      const label = await reverseGeocodeHomeAddress(
+        position.coords.latitude,
+        position.coords.longitude,
+        lang,
+      )
       await saveHome(position.coords.latitude, position.coords.longitude, label)
     } catch (err) {
       if (isPermissionDeniedError(err)) {
@@ -103,7 +126,7 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
     }
   }
 
-  const radiusOptions: HomeGeofenceRadius[] = [100, 150, 200, 300, 500]
+  const radiusOptions: HomeGeofenceRadius[] = [50, 75, 100, 150, 200, 300, 500]
 
   return (
     <Card>
@@ -123,6 +146,7 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
       <label className="field-label" htmlFor="home-address">
         {t('homeAddress.addressLabel')}
       </label>
+      <p className="hint-text">{t('homeAddress.addressExample')}</p>
       <input
         id="home-address"
         type="search"
@@ -130,20 +154,20 @@ export function HomeAddressSettings({ onHomeSaved }: HomeAddressSettingsProps) {
         placeholder={t('common.homePlaceholder')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        autoComplete="off"
+        autoComplete="street-address"
       />
       {loading && <p className="hint-text">{t('common.searching')}</p>}
       {results.length > 0 && (
         <ul className="city-results">
-          {results.map((city) => (
-            <li key={`${city.latitude}-${city.longitude}`}>
+          {results.map((address) => (
+            <li key={`${address.latitude}-${address.longitude}-${address.label}`}>
               <button
                 type="button"
                 className="city-result-btn"
                 disabled={saving}
-                onClick={() => void saveHome(city.latitude, city.longitude, city.label)}
+                onClick={() => void saveHome(address.latitude, address.longitude, address.label)}
               >
-                {city.label}
+                {address.label}
               </button>
             </li>
           ))}
